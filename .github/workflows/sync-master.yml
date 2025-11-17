@@ -100,10 +100,6 @@ jobs:
           set -euo pipefail
           git push origin "$BASE_BRANCH"
 
-      - name: Push tags to origin
-        run: |
-          set -euo pipefail
-          git push origin --tags
 
   master-build:
     name: Build synced master

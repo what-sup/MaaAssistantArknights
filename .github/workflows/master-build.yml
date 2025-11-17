@@ -57,9 +57,12 @@ jobs:
           ref: ${{ env.TARGET_REF }}
           fetch-depth: 0
 
-      - name: Fetch tags
+      - name: Fetch upstream tags
+        env:
+          UPSTREAM_REPO: MaaAssistantArknights/MaaAssistantArknights
         run: |
-          git fetch --tags --force
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git" 2>/dev/null || git remote set-url upstream "https://github.com/${UPSTREAM_REPO}.git"
+          git fetch upstream --tags --force
 
       - name: Gather build metadata
         id: meta
