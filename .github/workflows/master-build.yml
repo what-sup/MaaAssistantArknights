@@ -46,6 +46,8 @@ jobs:
       commit_sha: ${{ steps.meta.outputs.commit_sha }}
       artifact_prefix: ${{ steps.meta.outputs.artifact_prefix }}
       upload_release: ${{ steps.resolve_flags.outputs.upload_release }}
+      prerelease: ${{ steps.release_type.outputs.prerelease }}
+      make_latest: ${{ steps.release_type.outputs.make_latest }}
     env:
       TARGET_REF: ${{ inputs.ref || 'master' }}
       BUILD_REASON: ${{ inputs.reason || '' }}
@@ -99,6 +101,131 @@ jobs:
             input_value="true"
           fi
           echo "upload_release=$input_value" >> "$GITHUB_OUTPUT"
+
+      - name: Determine release type
+        id: release_type
+        run: |
+          event="${{ github.event_name }}"
+          if [ "$event" = "workflow_dispatch" ]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "make_latest=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "make_latest=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  windows-build:
+    name: Build Windows (${{ matrix.arch }})
+    needs: prepare
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+      fail-fast: false
+    env:
+      TARGET_COMMIT: ${{ needs.prepare.outputs.commit_sha }}
+      ARTIFACT_PREFIX: ${{ needs.prepare.outputs.artifact_prefix }}
+      RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+      RELEASE_NAME: ${{ needs.prepare.outputs.release_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TARGET_COMMIT }}
+          fetch-depth: 0
+
+      - name: Fetch submodules
+        run: |
+          git submodule update --init --depth 1 src/MaaUtils
+          git submodule update --init --depth 1 3rdparty/EmulatorExtras
+
+      - name: Cache MaaDeps
+        id: cache-win-maadeps
+        uses: actions/cache@v4
+        with:
+          path: ./src/MaaUtils/MaaDeps
+          key: master-windows-${{ matrix.arch }}-maadeps-${{ hashFiles('tools/maadeps-download.py') }}
+
+      - name: Bootstrap MaaDeps
+        if: steps.cache-win-maadeps.outputs.cache-hit != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 tools/maadeps-download.py ${{ matrix.arch }}-windows
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cmake -B build ${{ matrix.arch == 'arm64' && '-A ARM64' }} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DMAADEPS_TRIPLET='maa-${{ matrix.arch }}-windows' -DINSTALL_RESOURCE=ON -DINSTALL_PYTHON=ON -DMAA_HASH_VERSION='${{ env.RELEASE_TAG }}' -DBUILD_WPF_GUI=OFF
+
+      - name: Build
+        run: |
+          cmake --build build --config RelWithDebInfo --parallel $env:NUMBER_OF_PROCESSORS
+
+      - name: Install
+        run: |
+          mkdir -p install
+          cmake --install build --prefix install --config RelWithDebInfo
+
+      - name: Cache NuGet
+        id: cache-nuget
+        uses: actions/cache@v4
+        with:
+          path: |
+            .nuke/temp
+            ~/.nuget/packages
+          key: master-windows-${{ matrix.arch }}-nuget-${{ hashFiles('**/*.csproj') }}
+
+      - name: Restore dependencies
+        if: steps.cache-nuget.outputs.cache-hit != 'true'
+        run: dotnet restore src/MaaWpfGui/MaaWpfGui.csproj
+
+      - name: Taggify version for csproj
+        run: |
+          $csprojPath = "src/MaaWpfGui/MaaWpfGui.csproj"
+          $csprojPath = Resolve-Path -Path $csprojPath
+          $tag = '${{ env.RELEASE_NAME }}' -replace '.*?/', ''
+          if ($tag -match '\d+(\.\d+){1,3}') {
+              $match = $Matches[0]
+          } else {
+              $match = "0.0.1"
+          }
+          [xml]$csproj = Get-Content -Path $csprojPath
+          $node = $csproj.Project.PropertyGroup | where {$_.ApplicationVersion -ne $null}
+          $node.InformationalVersion = $tag
+          $node.Version = $match
+          $node.FileVersion = $match
+          $node.AssemblyVersion = $match
+          $csproj.Save($csprojPath)
+
+      - name: Publish WPF GUI
+        continue-on-error: true
+        run: |
+          dotnet publish src/MaaWpfGui/MaaWpfGui.csproj -c Release -p:Platform=${{ matrix.arch == 'arm64' && 'ARM64' || 'x64' }} -o install
+
+      - name: Organize install files
+        shell: pwsh
+        run: |
+          Remove-Item install/*.pdb -Force -ErrorAction SilentlyContinue
+          Remove-Item install/msvc-debug -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item install/*.h -Force -ErrorAction SilentlyContinue
+          Copy-Item "tools/DependencySetup_依赖库安装.bat" install
+
+      - name: Zip files
+        shell: pwsh
+        run: |
+          Push-Location install
+          $zipName = "${env:ARTIFACT_PREFIX}-win-${{ matrix.arch }}.zip"
+          if (Test-Path $zipName) { Remove-Item $zipName -Force }
+          Compress-Archive -DestinationPath $zipName -Path .\*
+          Pop-Location
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: master-win-${{ matrix.arch }}
+          path: install/*.zip
 
   linux-build:
     name: Build Linux (${{ matrix.arch }})
@@ -235,7 +362,7 @@ jobs:
   publish:
     name: Publish release
     if: needs.prepare.outputs.upload_release == 'true'
-    needs: [prepare, linux-build]
+    needs: [prepare, linux-build, windows-build]
     runs-on: ubuntu-latest
     steps:
       - name: Download build artifacts
@@ -256,8 +383,8 @@ jobs:
           body: ${{ needs.prepare.outputs.release_body }}
           files: upload/*
           draft: false
-          prerelease: true
-          make_latest: false
+          prerelease: ${{ needs.prepare.outputs.prerelease == 'true' }}
+          make_latest: ${{ needs.prepare.outputs.make_latest }}
           fail_on_unmatched_files: true
           append_body: false
-          overwrite: true
+          overwrite_files: true
