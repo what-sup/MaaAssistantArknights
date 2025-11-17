@@ -1,0 +1,75 @@
+name: Sync master from upstream
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_repo:
+        description: "Repository owner/name to sync from"
+        required: false
+        default: MaaAssistantArknights/MaaAssistantArknights
+      upstream_branch:
+        description: "Branch name to sync from upstream"
+        required: false
+        default: master
+  schedule:
+    - cron: "0 */3 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-master
+  cancel-in-progress: true
+
+jobs:
+  merge-upstream:
+    name: Merge upstream master
+    runs-on: ubuntu-latest
+    env:
+      BASE_BRANCH: master
+      UPSTREAM_REPO: MaaAssistantArknights/MaaAssistantArknights
+      UPSTREAM_BRANCH: master
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v5
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Apply manual inputs
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "UPSTREAM_REPO=${{ github.event.inputs.upstream_repo || 'MaaAssistantArknights/MaaAssistantArknights' }}" >> "$GITHUB_ENV"
+          echo "UPSTREAM_BRANCH=${{ github.event.inputs.upstream_branch || 'master' }}" >> "$GITHUB_ENV"
+
+      - name: Configure Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Prepare local master
+        run: |
+          set -euo pipefail
+          git checkout "$BASE_BRANCH"
+          git pull --ff-only origin "$BASE_BRANCH"
+
+      - name: Fetch upstream branch
+        run: |
+          set -euo pipefail
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git" 2>/dev/null || git remote set-url upstream "https://github.com/${UPSTREAM_REPO}.git"
+          git fetch upstream "$UPSTREAM_BRANCH"
+
+      - name: Merge upstream changes
+        run: |
+          set -euo pipefail
+          git merge --no-edit "upstream/${UPSTREAM_BRANCH}" || {
+            echo "::error::Merge resulted in conflicts. Resolve manually and re-run the workflow."
+            exit 1
+          }
+          git status -sb
+
+      - name: Push updated master
+        run: |
+          set -euo pipefail
+          git push origin "$BASE_BRANCH"

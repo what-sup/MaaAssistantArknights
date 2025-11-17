@@ -1,0 +1,72 @@
+name: Build master branch
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-build:
+    name: Linux build
+    runs-on: ubuntu-22.04
+    env:
+      BUILD_DIR: build
+      INSTALL_DIR: install
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v5
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Update submodules
+        run: git submodule update --init --recursive
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential ninja-build python3 python3-pip cmake
+
+      - name: Cache MaaDeps
+        id: cache-maadeps
+        uses: actions/cache@v4
+        with:
+          path: src/MaaUtils/MaaDeps
+          key: linux-maadeps-${{ hashFiles('tools/maadeps-download.py') }}
+
+      - name: Bootstrap MaaDeps
+        if: steps.cache-maadeps.outputs.cache-hit != 'true'
+        run: python3 tools/maadeps-download.py
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B "$BUILD_DIR" \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DINSTALL_RESOURCE=ON \
+            -DINSTALL_PYTHON=ON \
+            -DCMAKE_TOOLCHAIN_FILE=src/MaaUtils/MaaDeps/cmake/maa-x64-linux-toolchain.cmake
+
+      - name: Build
+        run: cmake --build "$BUILD_DIR" --parallel "$(nproc)"
+
+      - name: Install to staging directory
+        run: |
+          rm -rf "$INSTALL_DIR"
+          cmake --install "$BUILD_DIR" --prefix "$INSTALL_DIR"
+
+      - name: Create artifact archive
+        run: |
+          tar -C "$INSTALL_DIR" -czf "maa-linux-${GITHUB_SHA::7}.tar.gz" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: maa-linux-${{ github.sha }}
+          path: maa-linux-*.tar.gz
+
