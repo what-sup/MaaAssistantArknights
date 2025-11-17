@@ -352,7 +352,7 @@ public static class ResourceUpdater
     /// <returns>返回一个 <see cref="CheckUpdateRetT"/> 枚举值，指示更新检查和下载的结果。
     /// <list type="bullet">
     /// <item><description><see cref="CheckUpdateRetT.AlreadyLatest"/>：已是最新版本。</description></item>
-    /// <item><description><see cref="CheckUpdateRetT.OK"/>：有新版本。（海外源不会自动下载）</description></item>
+    /// <item><description><see cref="CheckUpdateRetT.OK"/>：有新版本。</description></item>
     /// <item><description><see cref="CheckUpdateRetT.NoMirrorChyanCdk"/>：有新版本，但未填写 cdk</description></item>
     /// <item><description><see cref="CheckUpdateRetT.OnlyGameResourceUpdated"/>：下载成功。</description></item>
     /// <item><description><see cref="CheckUpdateRetT.NetworkError"/>：网络错误。</description></item>
@@ -375,13 +375,14 @@ public static class ResourceUpdater
                 return ret;
             }
 
-            if (SettingsViewModel.VersionUpdateSettings.UpdateSource == "MirrorChyan" &&
-                await DownloadFromMirrorChyanAsync(uri, releaseNote))
+            bool downloadSucceeded = SettingsViewModel.VersionUpdateSettings.UpdateSource switch
             {
-                return CheckUpdateRetT.OnlyGameResourceUpdated;
-            }
+                "MirrorChyan" => await DownloadFromMirrorChyanAsync(uri, releaseNote),
+                "Github" => await UpdateFromGithubAsync(),
+                _ => await UpdateFromGithubAsync(),
+            };
 
-            return ret;
+            return downloadSucceeded ? CheckUpdateRetT.OnlyGameResourceUpdated : ret;
         }
         finally
         {
