@@ -25,6 +25,9 @@ jobs:
   merge-upstream:
     name: Merge upstream master
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.change_status.outputs.changed }}
+      new_sha: ${{ steps.updated_head.outputs.sha }}
     env:
       BASE_BRANCH: master
       UPSTREAM_REPO: MaaAssistantArknights/MaaAssistantArknights
@@ -54,11 +57,20 @@ jobs:
           git checkout "$BASE_BRANCH"
           git pull --ff-only origin "$BASE_BRANCH"
 
+      - name: Record base commit
+        id: base_head
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Fetch upstream branch
         run: |
           set -euo pipefail
           git remote add upstream "https://github.com/${UPSTREAM_REPO}.git" 2>/dev/null || git remote set-url upstream "https://github.com/${UPSTREAM_REPO}.git"
           git fetch upstream "$UPSTREAM_BRANCH"
+
+      - name: Fetch upstream tags
+        run: |
+          set -euo pipefail
+          git fetch upstream --tags --force
 
       - name: Merge upstream changes
         run: |
@@ -69,7 +81,36 @@ jobs:
           }
           git status -sb
 
+      - name: Record updated commit
+        id: updated_head
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Detect master changes
+        id: change_status
+        run: |
+          if [ "${{ steps.base_head.outputs.sha }}" = "${{ steps.updated_head.outputs.sha }}" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Push updated master
+        if: steps.change_status.outputs.changed == 'true'
         run: |
           set -euo pipefail
           git push origin "$BASE_BRANCH"
+
+      - name: Push tags to origin
+        run: |
+          set -euo pipefail
+          git push origin --tags
+
+  master-build:
+    name: Build synced master
+    needs: merge-upstream
+    if: needs.merge-upstream.result == 'success' && needs.merge-upstream.outputs.changed == 'true'
+    uses: ./.github/workflows/master-build.yml
+    with:
+      ref: ${{ needs.merge-upstream.outputs.new_sha }}
+      reason: Sync master workflow run ${{ github.run_id }}
+    secrets: inherit

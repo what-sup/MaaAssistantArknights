@@ -1,72 +1,261 @@
-name: Build master branch
+name: Master Build
 
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref (branch, tag, or commit) to build"
+        required: false
+        default: master
+      reason:
+        description: "Reason or note for this build"
+        required: false
+        default: ""
+      upload_release:
+        description: "Upload artifacts to GitHub release"
+        required: false
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      ref:
+        description: "Git ref (branch, tag, or commit) to build"
+        required: true
+        type: string
+      reason:
+        description: "Reason or note for this build"
+        required: false
+        type: string
+      upload_release:
+        description: "Upload artifacts to GitHub release"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
-  contents: read
+  contents: write
+  actions: read
 
 jobs:
-  linux-build:
-    name: Linux build
-    runs-on: ubuntu-22.04
+  prepare:
+    name: Prepare metadata
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.meta.outputs.release_tag }}
+      release_name: ${{ steps.meta.outputs.release_name }}
+      release_body: ${{ steps.meta.outputs.release_body }}
+      commit_sha: ${{ steps.meta.outputs.commit_sha }}
+      artifact_prefix: ${{ steps.meta.outputs.artifact_prefix }}
+      upload_release: ${{ steps.resolve_flags.outputs.upload_release }}
     env:
-      BUILD_DIR: build
-      INSTALL_DIR: install
+      TARGET_REF: ${{ inputs.ref || 'master' }}
+      BUILD_REASON: ${{ inputs.reason || '' }}
 
     steps:
-      - name: Checkout master
+      - name: Checkout ref
         uses: actions/checkout@v5
         with:
-          ref: master
+          ref: ${{ env.TARGET_REF }}
           fetch-depth: 0
 
-      - name: Update submodules
-        run: git submodule update --init --recursive
+      - name: Fetch tags
+        run: |
+          git fetch --tags --force
+
+      - name: Gather build metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          commit_sha=$(git rev-parse HEAD)
+          short_sha=${commit_sha:0:8}
+          tag="master-${short_sha}"
+          prefix="MAA-${tag}"
+          latest_tag=$(git describe --tags --match 'v*' --abbrev=0 2>/dev/null || echo 'v0.0.0')
+          ref_name="${TARGET_REF}"
+          reason="${BUILD_REASON}"
+          if [ -z "$reason" ]; then
+            reason="Automated trigger"
+          fi
+          timestamp=$(date -u +"%Y-%m-%d %H:%M UTC")
+          repo="${{ github.repository }}"
+          commit_url="https://github.com/${repo}/commit/${commit_sha}"
+          body="Automated master build for commit ${commit_sha} on ref ${ref_name}.%0A%0ATrigger: ${reason}%0ATime: ${timestamp}%0A%0A[View commit](${commit_url})"
+
+          {
+            echo "commit_sha=${commit_sha}"
+            echo "release_tag=${tag}"
+            echo "artifact_prefix=${prefix}"
+            echo "release_name=${latest_tag}"
+            echo "release_body=${body}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Resolve release upload flag
+        id: resolve_flags
+        run: |
+          input_value="${{ inputs.upload_release }}"
+          if [ -z "$input_value" ]; then
+            input_value="true"
+          fi
+          echo "upload_release=$input_value" >> "$GITHUB_OUTPUT"
+
+  linux-build:
+    name: Build Linux (${{ matrix.arch }})
+    needs: prepare
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            triplet: x64
+          - arch: aarch64
+            triplet: arm64
+      fail-fast: false
+    env:
+      TARGET_COMMIT: ${{ needs.prepare.outputs.commit_sha }}
+      ARTIFACT_PREFIX: ${{ needs.prepare.outputs.artifact_prefix }}
+      RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TARGET_COMMIT }}
+          fetch-depth: 0
+
+      - name: Fetch submodules
+        run: |
+          git submodule update --init --depth 1 src/MaaUtils
+          git submodule update --init --depth 1 3rdparty/EmulatorExtras
+          git submodule update --init --depth 1 src/maa-cli
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential ninja-build python3 python3-pip cmake
+          sudo apt-get install -y build-essential ninja-build python3 python3-pip cmake libfuse2
 
       - name: Cache MaaDeps
         id: cache-maadeps
         uses: actions/cache@v4
         with:
-          path: src/MaaUtils/MaaDeps
-          key: linux-maadeps-${{ hashFiles('tools/maadeps-download.py') }}
+          path: ./src/MaaUtils/MaaDeps
+          key: master-linux-${{ matrix.triplet }}-maadeps-${{ hashFiles('tools/maadeps-download.py') }}
 
       - name: Bootstrap MaaDeps
         if: steps.cache-maadeps.outputs.cache-hit != 'true'
-        run: python3 tools/maadeps-download.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 tools/maadeps-download.py ${{ matrix.triplet }}-linux
 
       - name: Configure CMake
         run: |
-          cmake -S . -B "$BUILD_DIR" \
+          mkdir -p build
+          cmake -B build \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DMAADEPS_TRIPLET='maa-${{ matrix.triplet }}-linux' \
             -DINSTALL_RESOURCE=ON \
             -DINSTALL_PYTHON=ON \
-            -DCMAKE_TOOLCHAIN_FILE=src/MaaUtils/MaaDeps/cmake/maa-x64-linux-toolchain.cmake
+            -DMAA_HASH_VERSION='${RELEASE_TAG}' \
+            -DCMAKE_TOOLCHAIN_FILE=src/MaaUtils/MaaDeps/cmake/maa-${{ matrix.triplet }}-linux-toolchain.cmake
 
       - name: Build
-        run: cmake --build "$BUILD_DIR" --parallel "$(nproc)"
-
-      - name: Install to staging directory
         run: |
-          rm -rf "$INSTALL_DIR"
-          cmake --install "$BUILD_DIR" --prefix "$INSTALL_DIR"
+          cmake --build build --config RelWithDebInfo --parallel "$(nproc)"
+        env:
+          CLICOLOR_FORCE: 1
 
-      - name: Create artifact archive
+      - name: Install
         run: |
-          tar -C "$INSTALL_DIR" -czf "maa-linux-${GITHUB_SHA::7}.tar.gz" .
+          mkdir -p install
+          cmake --install build --prefix install --config RelWithDebInfo
 
-      - name: Upload artifact
+      - name: Setup cross compile toolchains for CLI
+        uses: ./src/maa-cli/.github/actions/setup
+        with:
+          target_arch: ${{ matrix.arch }}
+
+      - name: Build CLI
+        run: |
+          cargo build --release --locked --package maa-cli --features vendored-openssl
+          cp -v target/$CARGO_BUILD_TARGET/release/maa $GITHUB_WORKSPACE/install/maa
+          cargo build --release --locked --package maa-cli --no-default-features --features git2,vendored-openssl
+          cp -v target/$CARGO_BUILD_TARGET/release/maa $GITHUB_WORKSPACE/appimage-maa
+        working-directory: src/maa-cli
+
+      - name: Build AppImage
+        run: |
+          sudo add-apt-repository universe
+          sudo apt update
+          sudo apt install libfuse2
+          mkdir -pv release
+          mkdir -pv Maa.AppDir/usr/share/maa
+          cp -r install/* Maa.AppDir/usr/share/maa/
+          wget -c https://raw.githubusercontent.com/MaaAssistantArknights/design/main/logo/maa-logo_512x512.png -O Maa.AppDir/maa.png
+          mkdir -pv Maa.AppDir/usr/share/icons/hicolor/512x512/apps/
+          cp -v Maa.AppDir/maa.png Maa.AppDir/usr/share/icons/hicolor/512x512/apps/
+          cp -v appimage-maa Maa.AppDir/usr/share/maa/maa
+          chmod a+x Maa.AppDir/usr/share/maa/maa
+
+          cat > Maa.AppDir/maa.desktop <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=MaaAssistantArknights
+          Icon=maa
+          Exec=AppRun
+          Terminal=true
+          Categories=Game;StrategyGame;
+          Comment=An Arknights assistant
+          EOF
+
+          ln -sv usr/share/maa/maa Maa.AppDir/AppRun
+          mkdir -pv Maa.AppDir/usr/share/metainfo/
+          cp -v tools/AppImage/io.github.maaassistantarknights.maaassistantarknights.metainfo.xml Maa.AppDir/usr/share/metainfo/
+          wget "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          wget "https://github.com/AppImage/type2-runtime/releases/download/old/runtime-fuse3-${{ matrix.arch }}"
+          chmod a+x appimagetool-x86_64.AppImage
+          ARCH=${{ matrix.arch }} ./appimagetool-x86_64.AppImage --runtime-file runtime-fuse3-${{ matrix.arch }} Maa.AppDir
+          chmod a+x MaaAssistantArknights-${{ matrix.arch }}.AppImage
+          mv -v MaaAssistantArknights-${{ matrix.arch }}.AppImage "release/${ARTIFACT_PREFIX}-linux-${{ matrix.arch }}.AppImage"
+
+      - name: Tar files
+        run: |
+          mkdir -p release
+          cd install
+          tar czvf "$GITHUB_WORKSPACE/release/${ARTIFACT_PREFIX}-linux-${{ matrix.arch }}.tar.gz" .
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: maa-linux-${{ github.sha }}
-          path: maa-linux-*.tar.gz
+          name: master-linux-${{ matrix.arch }}
+          path: release/*
 
+  publish:
+    name: Publish release
+    if: needs.prepare.outputs.upload_release == 'true'
+    needs: [prepare, linux-build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Collect files
+        run: |
+          mkdir -p upload
+          find release-artifacts -type f -print -exec mv {} upload/ \;
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.release_tag }}
+          name: ${{ needs.prepare.outputs.release_name }}
+          body: ${{ needs.prepare.outputs.release_body }}
+          files: upload/*
+          draft: false
+          prerelease: true
+          make_latest: false
+          fail_on_unmatched_files: true
+          append_body: false
+          overwrite: true
