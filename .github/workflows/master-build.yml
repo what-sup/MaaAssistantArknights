@@ -16,6 +16,14 @@ on:
         required: false
         type: boolean
         default: true
+      release_type:
+        description: "Release type when uploading artifacts"
+        required: false
+        type: choice
+        default: prerelease
+        options:
+          - prerelease
+          - release
   workflow_call:
     inputs:
       ref:
@@ -72,9 +80,9 @@ jobs:
           set -euo pipefail
           commit_sha=$(git rev-parse HEAD)
           short_sha=${commit_sha:0:8}
-          tag="master-${short_sha}"
-          prefix="MAA-${tag}"
           latest_tag=$(git describe --tags --match 'v*' --abbrev=0 2>/dev/null || echo 'v0.0.0')
+          tag="${latest_tag}"
+          prefix="MAA-${tag}"
           ref_name="${TARGET_REF}"
           reason="${BUILD_REASON}"
           if [ -z "$reason" ]; then
@@ -106,9 +114,15 @@ jobs:
         id: release_type
         run: |
           event="${{ github.event_name }}"
+          input_type="${{ inputs.release_type }}"
           if [ "$event" = "workflow_dispatch" ]; then
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
-            echo "make_latest=false" >> "$GITHUB_OUTPUT"
+            if [ "$input_type" = "release" ]; then
+              echo "prerelease=false" >> "$GITHUB_OUTPUT"
+              echo "make_latest=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "prerelease=true" >> "$GITHUB_OUTPUT"
+              echo "make_latest=false" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
             echo "make_latest=true" >> "$GITHUB_OUTPUT"
@@ -374,6 +388,15 @@ jobs:
         run: |
           mkdir -p upload
           find release-artifacts -type f -print -exec mv {} upload/ \;
+
+      - name: Delete existing release with same tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release delete "$RELEASE_TAG" -y
+          fi
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
