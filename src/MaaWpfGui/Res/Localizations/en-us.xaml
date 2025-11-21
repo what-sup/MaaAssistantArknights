@@ -1219,6 +1219,7 @@ Right-click to clear inactive tasks</system:String>
     <system:String x:Key="Announcement">Announcement</system:String>
     <system:String x:Key="CheckAndDownloadAnnouncement">View Announcement</system:String>
     <system:String x:Key="DoNotRemindThisAnnouncementAgain">Do not show this announcement again</system:String>
+    <system:String x:Key="DoNotShowAnnouncement">Disable announcement popups</system:String>
     <!--  !Announcement  -->
     <!--  Reclamation  -->
     <system:String x:Key="ReclamationEarlyTip" xml:space="preserve">
