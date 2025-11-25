@@ -35,11 +35,19 @@ jobs:
       WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
 
     steps:
+      - name: Ensure PAT is available
+        run: |
+          if [ -z "${WORKFLOW_PAT:-}" ]; then
+            echo "::error::WORKFLOW_PAT secret is required to run sync-master (needs workflows scope)."
+            exit 1
+          fi
+
       - name: Checkout master
         uses: actions/checkout@v5
         with:
           ref: master
           fetch-depth: 0
+          token: ${{ secrets.WORKFLOW_PAT }}
 
       - name: Apply manual inputs
         if: github.event_name == 'workflow_dispatch'
