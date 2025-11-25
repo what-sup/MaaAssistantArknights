@@ -16,7 +16,6 @@ on:
 
 permissions:
   contents: write
-  workflows: write
 
 concurrency:
   group: sync-master
@@ -33,7 +32,6 @@ jobs:
       BASE_BRANCH: master
       UPSTREAM_REPO: MaaAssistantArknights/MaaAssistantArknights
       UPSTREAM_BRANCH: master
-      WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
 
     steps:
       - name: Checkout master
@@ -100,11 +98,7 @@ jobs:
         if: steps.change_status.outputs.changed == 'true'
         run: |
           set -euo pipefail
-          if [ -z "${WORKFLOW_PAT:-}" ]; then
-            echo "::error::WORKFLOW_PAT secret is required to push workflow changes"
-            exit 1
-          fi
-          git push "https://x-access-token:${WORKFLOW_PAT}@github.com/${{ github.repository }}" "$BASE_BRANCH"
+          git push origin "$BASE_BRANCH"
 
 
   master-build:
