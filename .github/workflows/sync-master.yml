@@ -79,6 +79,8 @@ jobs:
             echo "::error::Merge resulted in conflicts. Resolve manually and re-run the workflow."
             exit 1
           }
+          # Drop workflow changes to avoid needing workflows permission on forks
+          git restore --staged --worktree .github/workflows || true
           git status -sb
 
       - name: Record updated commit
