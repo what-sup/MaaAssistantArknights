@@ -122,4 +122,5 @@ jobs:
     with:
       ref: ${{ needs.merge-upstream.outputs.new_sha }}
       reason: Sync master workflow run ${{ github.run_id }}
+      release_type: release
     secrets: inherit

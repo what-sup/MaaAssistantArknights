@@ -39,6 +39,10 @@ on:
         required: false
         type: boolean
         default: true
+      release_type:
+        description: "Release type when uploading artifacts (release or prerelease)"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -115,6 +119,14 @@ jobs:
         run: |
           event="${{ github.event_name }}"
           input_type="${{ inputs.release_type }}"
+          normalize() {
+            case "$1" in
+              release) echo "release" ;;
+              prerelease) echo "prerelease" ;;
+              *) echo "" ;;
+            esac
+          }
+          input_type="$(normalize "$input_type")"
           if [ "$event" = "workflow_dispatch" ]; then
             if [ "$input_type" = "release" ]; then
               echo "prerelease=false" >> "$GITHUB_OUTPUT"
@@ -124,8 +136,13 @@ jobs:
               echo "make_latest=false" >> "$GITHUB_OUTPUT"
             fi
           else
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
-            echo "make_latest=true" >> "$GITHUB_OUTPUT"
+            if [ "$input_type" = "prerelease" ]; then
+              echo "prerelease=true" >> "$GITHUB_OUTPUT"
+              echo "make_latest=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "prerelease=false" >> "$GITHUB_OUTPUT"
+              echo "make_latest=true" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
   windows-build:
