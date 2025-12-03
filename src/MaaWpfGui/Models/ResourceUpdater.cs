@@ -367,7 +367,14 @@ public static class ResourceUpdater
             var (ret, uri, releaseNote) = await CheckFromMirrorChyanAsync();
             if (ret == CheckUpdateRetT.NoMirrorChyanCdk)
             {
-                ToastNotification.ShowDirect(string.Format(LocalizationHelper.GetString("MirrorChyanResourceUpdateTip"), releaseNote));
+                if (SettingsViewModel.VersionUpdateSettings.UpdateSource == "MirrorChyan")
+                {
+                    ToastNotification.ShowDirect(string.Format(LocalizationHelper.GetString("MirrorChyanResourceUpdateTip"), releaseNote));
+                    return ret;
+                }
+
+                // 当更新源为 Github 时，即便 MirrorChyan 缺少 CDK 也应继续从 Github 获取资源
+                ret = CheckUpdateRetT.OK;
             }
 
             if (ret != CheckUpdateRetT.OK)
