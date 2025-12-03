@@ -606,25 +606,13 @@ public class VersionUpdateViewModel : Screen
             return CheckUpdateRetT.FailedToGetInfo;
         }
 
-        string? rawUrl = _assetsObject["browser_download_url"]?.ToString();
+        var arch = IsArm ? "arm64" : "x64";
         var urls = new List<string>();
 
-        if (SettingsViewModel.VersionUpdateSettings.UpdateSource == "Github" && !SettingsViewModel.VersionUpdateSettings.ForceGithubGlobalSource)
+        // 只使用自定义 fork 仓库的全量包下载地址
+        if (!string.IsNullOrWhiteSpace(_latestVersion))
         {
-            var mirrors = _assetsObject["mirrors"]?.ToObject<List<string>>();
-
-            if (mirrors != null)
-            {
-                urls.AddRange(mirrors);
-            }
-        }
-
-        // 负载均衡
-        // var rand = new Random();
-        // urls = urls.OrderBy(_ => rand.Next()).ToList();
-        if (rawUrl != null)
-        {
-            urls.Add(rawUrl);
+            urls.Add($"https://github.com/what-sup/MaaAssistantArknights/releases/download/{_latestVersion}/MAA-{_latestVersion}-win-{arch}.zip");
         }
 
         _logger.Information("Start test legacy download urls");
