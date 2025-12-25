@@ -49,6 +49,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Stylet;
 using StyletIoC;
+using static MaaWpfGui.States.RunningState;
 
 namespace MaaWpfGui.Main;
 
@@ -340,8 +341,7 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
                 cancel: LocalizationHelper.GetString("Cancel"));
             if (ret == MessageBoxResult.OK)
             {
-                var startInfo = new ProcessStartInfo
-                {
+                var startInfo = new ProcessStartInfo {
                     FileName = "DependencySetup_依赖库安装.bat",
                     WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory, // 设置工作目录
                     WindowStyle = ProcessWindowStyle.Normal, // 显示窗口让用户看到进度
@@ -481,6 +481,8 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
 
         builder.Bind<IHttpService>().To<HttpService>().InSingletonScope();
         builder.Bind<IMaaApiService>().To<MaaApiService>().InSingletonScope();
+
+        builder.Bind<OverlayViewModel>().ToSelf().InSingletonScope();
     }
 
     protected override void Configure()
@@ -550,15 +552,26 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
             { // ignored
             }
 
-            foreach (var file in new DirectoryInfo(".").GetFiles("*.old"))
+            foreach (var file in new DirectoryInfo(".").EnumerateFiles("*.old"))
             {
                 try
                 {
                     file.Delete();
                 }
                 catch (Exception)
+                { // ignored
+                }
+            }
+
+            // 清理残留的 OTA 更新包临时文件
+            foreach (var file in new DirectoryInfo(".").EnumerateFiles("MAAComponent-OTA*.temp"))
+            {
+                try
                 {
-                    // ignored
+                    file.Delete();
+                }
+                catch (Exception)
+                { // ignored
                 }
             }
         }
@@ -660,8 +673,7 @@ public class Bootstrapper : Bootstrapper<RootViewModel>
 
     private static void ShowErrorDialog(Exception exception)
     {
-        Application.Current.Dispatcher.Invoke(() =>
-        {
+        Application.Current.Dispatcher.Invoke(() => {
             // DragDrop.DoDragSourceMove 会导致崩溃，但不需要退出程序
             // 这是一坨屎，但是没办法，只能这样了
             var isDragDropException = exception is COMException && exception.ToString()!.Contains("DragDrop.DoDragSourceMove");

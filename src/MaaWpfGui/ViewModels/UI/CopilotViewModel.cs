@@ -92,8 +92,7 @@ public partial class CopilotViewModel : Screen
         DisplayName = LocalizationHelper.GetString("Copilot");
         AddLog(LocalizationHelper.GetString("CopilotTip"), showTime: false);
         _runningState = RunningState.Instance;
-        _runningState.StateChanged += (_, e) =>
-        {
+        _runningState.StateChanged += (_, e) => {
             Idle = e.Idle;
             Inited = e.Inited;
             Stopping = e.Stopping;
@@ -126,14 +125,28 @@ public partial class CopilotViewModel : Screen
     /// <param name="color">The font color.</param>
     /// <param name="weight">The font weight.</param>
     /// <param name="showTime">Whether show time.</param>
-    public void AddLog(string content, string color = UiLogColor.Trace, string weight = "Regular", bool showTime = true)
+    public void AddLog(string? content, string color = UiLogColor.Trace, string weight = "Regular", bool showTime = true)
     {
-        Execute.OnUIThread(() =>
+        if (string.IsNullOrEmpty(content))
         {
+            return;
+        }
+        Execute.OnUIThread(() => {
             LogItemViewModels.Add(new LogItemViewModel(content, color, weight, "HH':'mm':'ss", showTime: showTime));
             if (showTime)
             {
-                _logger.Information(content);
+                switch (color)
+                {
+                    case UiLogColor.Error:
+                        _logger.Error("{Content}", content);
+                        break;
+                    case UiLogColor.Warning:
+                        _logger.Warning("{Content}", content);
+                        break;
+                    default:
+                        _logger.Information("{Content}", content);
+                        break;
+                }
             }
         });
 
@@ -145,8 +158,7 @@ public partial class CopilotViewModel : Screen
     /// </summary>
     private void ClearLog()
     {
-        Execute.OnUIThread(() =>
-        {
+        Execute.OnUIThread(() => {
             foreach (var log in LogItemViewModels)
             {
                 if (log.ToolTip is ToolTip t)
@@ -213,16 +225,14 @@ public partial class CopilotViewModel : Screen
     public int CopilotTabIndex
     {
         get => _copilotTabIndex;
-        set
-        {
+        set {
             if (!SetAndNotify(ref _copilotTabIndex, value))
             {
                 return;
             }
 
             Form = false;
-            UseCopilotList = value switch
-            {
+            UseCopilotList = value switch {
                 1 => false,
                 _ => UseCopilotList,
             };
@@ -237,8 +247,7 @@ public partial class CopilotViewModel : Screen
     public string Filename
     {
         get => _filename;
-        set
-        {
+        set {
             if (!File.Exists(value))
             {
                 var resourceFile = Path.Combine(ResourceDir, "copilot", Path.GetFileName(value));
@@ -310,8 +319,7 @@ public partial class CopilotViewModel : Screen
     public bool AddUserAdditional
     {
         get => _addUserAdditional;
-        set
-        {
+        set {
             SetAndNotify(ref _addUserAdditional, value);
             ConfigurationHelper.SetValue(ConfigurationKeys.CopilotAddUserAdditional, value.ToString());
         }
@@ -325,8 +333,7 @@ public partial class CopilotViewModel : Screen
     public string UserAdditional
     {
         get => _userAdditional;
-        set
-        {
+        set {
             value = value.Trim();
             SetAndNotify(ref _userAdditional, value);
             ConfigurationHelper.SetValue(ConfigurationKeys.CopilotUserAdditional, value);
@@ -380,8 +387,7 @@ public partial class CopilotViewModel : Screen
                         skill = 3;
                     }
 
-                    var item = new UserAdditionalItemViewModel
-                    {
+                    var item = new UserAdditionalItemViewModel {
                         Name = op.Name,
                         Skill = skill,
                         Module = op.Module,
@@ -410,8 +416,7 @@ public partial class CopilotViewModel : Screen
                             skill = 3;
                         }
 
-                        var item = new UserAdditionalItemViewModel
-                        {
+                        var item = new UserAdditionalItemViewModel {
                             Name = name,
                             Skill = skill,
                             Module = 0,
@@ -460,8 +465,7 @@ public partial class CopilotViewModel : Screen
                 skill = 3;
             }
 
-            list.Add(new UserAdditional
-            {
+            list.Add(new UserAdditional {
                 Name = item.Name.Trim(),
                 Skill = skill,
                 Module = item.Module,
@@ -581,8 +585,7 @@ public partial class CopilotViewModel : Screen
     public int FormationIndex
     {
         get => _formationIndex;
-        set
-        {
+        set {
             SetAndNotify(ref _formationIndex, value);
             ConfigurationHelper.SetValue(ConfigurationKeys.CopilotSelectFormation, value.ToString());
         }
@@ -601,8 +604,7 @@ public partial class CopilotViewModel : Screen
     public int SupportUnitUsage
     {
         get => _supportUnitUsage;
-        set
-        {
+        set {
             SetAndNotify(ref _supportUnitUsage, value);
             ConfigurationHelper.SetValue(ConfigurationKeys.CopilotSupportUnitUsage, value.ToString());
         }
@@ -623,8 +625,7 @@ public partial class CopilotViewModel : Screen
     public bool UseCopilotList
     {
         get => _useCopilotList;
-        set
-        {
+        set {
             if (value)
             {
                 _taskType = AsstTaskType.Copilot;
@@ -643,8 +644,7 @@ public partial class CopilotViewModel : Screen
     public string? CopilotTaskName
     {
         get => _copilotTaskName;
-        set
-        {
+        set {
             value = InvalidStageNameRegex().Replace(value ?? string.Empty, string.Empty).Trim();
             SetAndNotify(ref _copilotTaskName, value);
         }
@@ -657,8 +657,7 @@ public partial class CopilotViewModel : Screen
     public int LoopTimes
     {
         get => _loopTimes;
-        set
-        {
+        set {
             SetAndNotify(ref _loopTimes, value);
             ConfigurationHelper.SetValue(ConfigurationKeys.CopilotLoopTimes, value.ToString());
         }
@@ -685,8 +684,7 @@ public partial class CopilotViewModel : Screen
     public string CopilotUrl
     {
         get => _copilotUrl;
-        private set
-        {
+        private set {
             UrlText = value == CopilotUiUrl ? LocalizationHelper.GetString("PrtsPlus") : LocalizationHelper.GetString("VideoLink");
             SetAndNotify(ref _copilotUrl, value);
         }
@@ -721,8 +719,7 @@ public partial class CopilotViewModel : Screen
     [UsedImplicitly]
     public void SelectFile()
     {
-        var dialog = new OpenFileDialog
-        {
+        var dialog = new OpenFileDialog {
             Filter = "JSON|*.json|Video|*.mp4;*.m4s;*.mkv;*.flv;*.avi",
         };
 
@@ -781,8 +778,7 @@ public partial class CopilotViewModel : Screen
     [UsedImplicitly]
     public async Task ImportFiles()
     {
-        var dialog = new OpenFileDialog
-        {
+        var dialog = new OpenFileDialog {
             Filter = "JSON|*.json",
             Multiselect = true,
         };
@@ -1475,8 +1471,7 @@ public partial class CopilotViewModel : Screen
     /// </summary>
     public void CopilotTaskSuccess()
     {
-        Execute.OnUIThread(() =>
-        {
+        Execute.OnUIThread(() => {
             foreach (var model in CopilotItemViewModels)
             {
                 if (!model.IsChecked)
@@ -1505,8 +1500,7 @@ public partial class CopilotViewModel : Screen
     [UsedImplicitly]
     public void CopilotItemIndexChanged()
     {
-        Execute.OnUIThread(() =>
-        {
+        Execute.OnUIThread(() => {
             for (int i = 0; i < CopilotItemViewModels.Count; i++)
             {
                 CopilotItemViewModels[i].Index = i;
@@ -1530,6 +1524,8 @@ public partial class CopilotViewModel : Screen
             AddLog(Localization.GetString("AutoSquadTip"), LogColor.Message);
         }*/
         _runningState.SetIdle(false);
+
+        Instances.OverlayViewModel.LogItemsSource = LogItemViewModels;
 
         if (_taskType == AsstTaskType.VideoRecognition)
         {
@@ -1617,8 +1613,7 @@ public partial class CopilotViewModel : Screen
                 {
                     Regex regex = new(@"(?<=;)(?<name>[^,;]+)(?:, *(?<skill>\d))?(?=;)", RegexOptions.Compiled);
                     var matches = regex.Matches(";" + UserAdditional + ";").ToList();
-                    userAdditional = matches.Select(match =>
-                    {
+                    userAdditional = matches.Select(match => {
                         var name = match.Groups[1].Value.Trim();
                         var skillStr = match.Groups[2].Value;
                         int skill = string.IsNullOrEmpty(skillStr) ? 1 : int.Parse(skillStr);
@@ -1631,8 +1626,7 @@ public partial class CopilotViewModel : Screen
                             skill = 3;
                         }
 
-                        return new UserAdditional
-                        {
+                        return new UserAdditional {
                             Name = name,
                             Skill = skill,
                             Module = 0,
@@ -1653,14 +1647,12 @@ public partial class CopilotViewModel : Screen
             {
                 _copilotIdList.Clear();
 
-                var t = CopilotItemViewModels.Where(i => i.IsChecked).Select(i =>
-                {
+                var t = CopilotItemViewModels.Where(i => i.IsChecked).Select(i => {
                     _copilotIdList.Add(i.CopilotId);
                     return new MultiTask { FileName = i.FilePath, IsRaid = i.IsRaid, StageName = i.Name, IsParadox = CopilotTabIndex == 2, };
                 });
 
-                var task = new AsstCopilotTask()
-                {
+                var task = new AsstCopilotTask() {
                     MultiTasks = [.. t],
                     Formation = Form,
                     SupportUnitUsage = UseSupportUnitUsage ? SupportUnitUsage : 0,
@@ -1690,8 +1682,7 @@ public partial class CopilotViewModel : Screen
                     }
                 }
 
-                var task = new AsstCopilotTask()
-                {
+                var task = new AsstCopilotTask() {
                     FileName = IsDataFromWeb ? TempCopilotFile : Filename,
                     Formation = Form,
                     SupportUnitUsage = UseSupportUnitUsage ? SupportUnitUsage : 0,
@@ -1770,8 +1761,7 @@ public partial class CopilotViewModel : Screen
     private int CopilotId
     {
         get => _copilotId;
-        set
-        {
+        set {
             SetAndNotify(ref _copilotId, value);
             CouldLikeWebJson = value > 0;
         }
@@ -1818,8 +1808,7 @@ public partial class CopilotViewModel : Screen
             return false;
         }
 
-        var stageNames = copilotItemViewModels.Select(i => i.FilePath).ToHashSet().Select(async path =>
-        {
+        var stageNames = copilotItemViewModels.Select(i => i.FilePath).ToHashSet().Select(async path => {
             if (!File.Exists(path))
             {
                 AddLog(LocalizationHelper.GetString("CopilotNoFound") + path, UiLogColor.Error, showTime: false);
