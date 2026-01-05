@@ -151,7 +151,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        arch: [x64, arm64]
+        arch: [x64]
       fail-fast: false
     env:
       TARGET_COMMIT: ${{ needs.prepare.outputs.commit_sha }}
@@ -267,8 +267,6 @@ jobs:
         include:
           - arch: x86_64
             triplet: x64
-          - arch: aarch64
-            triplet: arm64
       fail-fast: false
     env:
       TARGET_COMMIT: ${{ needs.prepare.outputs.commit_sha }}
