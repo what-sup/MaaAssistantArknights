@@ -64,11 +64,10 @@ icon: iconoir:developer
 6. 執行 CMake 專案配置
 
    ```cmd
-   mkdir -p build
-   cmake -G "Visual Studio 18 2026" -B build -DBUILD_WPF_GUI=ON -DBUILD_DEBUG_DEMO=ON
+   cmake --preset windows-x64
    ```
 
-7. 雙擊開啟 `build/MAA.sln` 檔案，Visual Studio 會自動載入整個專案。
+7. 雙擊開啟 `build/MAA.slnx` 檔案，Visual Studio 會自動載入整個專案。
 8. 設定 Visual Studio
    - Visual Studio 上方配置選擇 `Debug` `x64`
    - 右鍵點擊 `MaaWpfGui` - 設為啟動專案。
@@ -82,12 +81,12 @@ icon: iconoir:developer
 10. 開發過程中，每一定數量，記得提交一個 Commit, 別忘了寫上 Message  
     假如你不熟悉 git 的使用，你可能想要新建一個分支進行更改，而不是直接提交在 `dev` 上
 
-```bash
-git branch your_own_branch
-git checkout your_own_branch
-```
+    ```bash
+    git branch your_own_branch
+    git checkout your_own_branch
+    ```
 
-這樣你的提交就能在新的分支上生長，不會受到 `dev` 更新的打擾
+    這樣你的提交就能在新的分支上生長，不會受到 `dev` 更新的打擾
 
 11. 完成開發後，推送你修改過的本地分支（以 `dev` 為例）到遠端（Fork 的倉庫）
 
@@ -128,6 +127,42 @@ git checkout your_own_branch
 開啟 Visual Studio 之後，和 Git 有關的操作可以不用命令列工具，直接使用 Visual Studio 內建的「Git 變更」功能即可。
 :::
 
+## 使用 VS Code 進行開發（可選）
+
+::: warning
+**建議優先使用 Visual Studio 進行開發。** MAA 專案主要基於 Visual Studio 建置，上述完整環境配置流程已涵蓋所有開發需求，開箱即用體驗最佳。VSCode 方案僅作為備選，適合已經熟悉 VS Code + CMake + clangd 工作流的開發者，配置門檻相對較高。
+:::
+
+如果您偏好使用 VSCode，可以搭配 CMake、clangd 等擴充套件獲得程式碼補全、跳轉與除錯能力。完成前述 1–6 步（複製、相依、CMake 設定）後，可依下列步驟設定：
+
+### 推薦擴充套件
+
+於 VS Code 擴充套件市集安裝：
+
+| 擴充套件                                                                                            | 作用                                                |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)            | CMake 設定、建置、除錯整合                          |
+| [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) | C++ 智慧提示、程式碼跳轉、診斷（基於 LSP）          |
+| [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)                     | 除錯 C++ 程式（與 CMake Tools 或 launch.json 搭配） |
+
+::: tip
+使用 clangd 時，建議停用 C/C++ 擴充套件的 IntelliSense（將 `C_Cpp.intelliSenseEngine` 設為 `disabled`），以免與 clangd 衝突。
+:::
+
+### 設定步驟
+
+1. 使用 VS Code 開啟專案根目錄
+2. **CMake Tools**：
+   - 於狀態列選擇 Configure Preset（如 `windows-x64`、`linux-x64` 等）
+   - 選擇 Build Preset，執行設定與建置
+3. **clangd**：在 Windows 上搭配 MSVC 使用時無需 `compile_commands.json` 即可正常開發。Linux/macOS 下預設已開啟 `CMAKE_EXPORT_COMPILE_COMMANDS`，clangd 會自動使用 `build/compile_commands.json`
+4. **除錯**：專案已包含 `.vscode/launch.json`，可直接啟動 MaaWpfGui 或 Debug Demo 進行除錯
+
+### 快速建置與除錯
+
+- **建置**：`Ctrl+Shift+B` 或透過 CMake Tools 狀態列
+- **除錯**：F5 或於執行與除錯面板選擇對應設定
+
 ## MAA 的檔案格式化要求
 
 MAA 使用一系列的格式化工具來確保倉庫中的程式碼和資源檔案美觀統一，以便於維護和閱讀。
@@ -139,7 +174,7 @@ MAA 使用一系列的格式化工具來確保倉庫中的程式碼和資源檔�
 | 檔案類型  | 格式化工具                                                      |
 | --------- | --------------------------------------------------------------- |
 | C++       | [clang-format](https://clang.llvm.org/docs/ClangFormat.html)    |
-| Json/Yaml | [Prettier](https://prettier.io/)                                |
+| JSON/YAML | [Prettier](https://prettier.io/)                                |
 | Markdown  | [markdownlint](https://github.com/DavidAnson/markdownlint-cli2) |
 
 ### 利用 Pre-commit Hooks 自動進行程式碼格式化

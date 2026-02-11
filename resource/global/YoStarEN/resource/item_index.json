@@ -975,6 +975,14 @@
         "sortId": 40003,
         "usage": "A batch headhunting permit issued by the Rhodes Island HR Department; Can be used at a certain time to recruit talented Operators, 10 rolls at once."
     },
+    "LINKAGE_TKT_GACHA_10_6501": {
+        "classifyType": "NORMAL",
+        "description": "In order to ensure the available talent pool can be scaled upwards to satisfy the Doctor's emergency preparation request, this batch of headhunting items carries specificity, time-sensitivity, and of course, a degree of risk.",
+        "icon": "LINKAGE_TKT_GACHA_10_6501.png",
+        "name": "Ballads Tumbling Through Myriad Dreams Headhunting Permit",
+        "sortId": 40003,
+        "usage": "A batch headhunting permit issued by the Rhodes Island HR Department; Can be used at a certain time to recruit talented Operators, 10 rolls at once."
+    },
     "LMTGS_COIN_1401": {
         "classifyType": "NORMAL",
         "description": "A long-term, stable relationship with the headhunting agency can effectively control our expenditures. However, we hope that this method will not be required every time.",
@@ -1871,6 +1879,14 @@
         "sortId": -10000,
         "usage": "Can be exchanged for the corresponding event stage reward."
     },
+    "act2enemyduel_milestone_point": {
+        "classifyType": "NONE",
+        "description": "Apparently, using it can send a fullscreen fireworks effect along with a message to the entire Duel Channel. But what the richie-riches who break the TOS to spam them in public chat all day might not know is that they can be blocked with a click of a button on the website.",
+        "icon": "act2enemyduel_milestone_point.png",
+        "name": "Grand Duel Fireworks",
+        "sortId": -10000,
+        "usage": "One of the more expensive Duel Channel gifts, and can be exchanged on the website for material rewards, with free shipping and home delivery."
+    },
     "act2mainss_token": {
         "classifyType": "NONE",
         "description": "To help calm the children anxious about leaving the landship, Raidian made these pin badges with paging and messaging functionalities, encouraging them to keep on smiling and stay in contact. After hearing about them, many operators asked her for some, recording words of encouragement on them before hiding them all over prior to the evacuation.",
@@ -2047,6 +2063,14 @@
         "sortId": -10000,
         "usage": "A ticket distributed by a talent agency, which can be exchanged for entry into a lottery. After a certain incident, they were the hottest item at the Vintage Bazaar for a while, and could be traded for nearly anything."
     },
+    "act45side_token_puzzlepieces": {
+        "classifyType": "NONE",
+        "description": "No matter its beauty, a dream is but a dream, destined to fade from memory in time. It is hence that the masters of the Castle of Dreams have made a museum to hold onto these vanishing dreams, storing them in the manner of precious works of art. Each master has their own tastes, so take care not to offend with what you give them.",
+        "icon": "act45side_token_puzzlepieces.png",
+        "name": "Dream Puzzle Pieces",
+        "sortId": -10000,
+        "usage": "A piece of a dream-shaped puzzle, dazzling and beautiful. You found these strewn across the floor when you came to the Castle. Now, be patient, gather them together, and see the wondrous scenes you bring to life once more."
+    },
     "act4bossrush_milestone_point": {
         "classifyType": "NONE",
         "description": "Right and wrong are far from crucial in a simulation. They are only a form of support. They help you make the correct choices when the battle is real.",
@@ -2118,6 +2142,14 @@
         "name": "Operation Agreement",
         "sortId": -10000,
         "usage": "A symbol of cooperation. Can be used to unlock additional content in Contingency Contract."
+    },
+    "act6collection_point_token": {
+        "classifyType": "NONE",
+        "description": "Rhodes Island issues special redemption points as an incentive to field operators. These points can be used to redeem important supplies.",
+        "icon": "act6collection_point_token.png",
+        "name": "Special Redemption Point",
+        "sortId": -10000,
+        "usage": "Can be exchanged for the corresponding event stage reward."
     },
     "act6d5_point_firecracker": {
         "classifyType": "NONE",

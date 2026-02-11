@@ -68,10 +68,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel
         RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeMizuki"), Value = Theme.Mizuki });
         RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeSami"), Value = Theme.Sami });
         RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeSarkaz"), Value = Theme.Sarkaz });
-        if (SettingsViewModel.GameSettings.ClientType is not "txwy")
-        { // 外服暂未开放界园
-            RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeJieGarden"), Value = Theme.JieGarden });
-        }
+        RoguelikeThemeList.Add(new() { Display = LocalizationHelper.GetString("RoguelikeThemeJieGarden"), Value = Theme.JieGarden });
     }
 
     private void UpdateRoguelikeDifficultyList()
@@ -105,7 +102,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel
         Theme.Mizuki => 18,
         Theme.Sami => 15,
         Theme.Sarkaz => 18,
-        Theme.JieGarden => 15,
+        Theme.JieGarden => 18,
         _ => 20,
     };
 
@@ -226,6 +223,9 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel
             ("IS5NewSquad6", "花团锦簇分队"),
             ("IS5NewSquad7", "棋行险着分队"),
             ("IS5NewSquad8", "岁影回音分队"),
+            ("IS5NewSquad9", "代理人分队"),
+            ("IS5NewSquad10", "知学分队"),
+            ("IS5NewSquad11", "商贾分队"),
         ],
     };
 
@@ -244,6 +244,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel
     private void UpdateRoguelikeSquadList()
     {
         var roguelikeSquad = RoguelikeSquad;
+        var roguelikeSquadCollectible = RoguelikeCollectibleModeSquad;
         RoguelikeSquadList = [];
 
         // 优先匹配 Theme_Mode，其次匹配 Theme_Default
@@ -270,7 +271,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel
 
         // 选择当前分队
         RoguelikeSquad = RoguelikeSquadList.Any(x => x.Value == roguelikeSquad) ? roguelikeSquad : "指挥分队";
-        RoguelikeCollectibleModeSquad = RoguelikeSquadList.Any(x => x.Value == RoguelikeCollectibleModeSquad) ? RoguelikeCollectibleModeSquad : RoguelikeSquad;
+        RoguelikeCollectibleModeSquad = RoguelikeSquadList.Any(x => x.Value == roguelikeSquadCollectible) ? roguelikeSquadCollectible : RoguelikeSquad;
     }
 
     private void UpdateRoguelikeCoreCharList()
@@ -821,17 +822,22 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel
         }
     }
 
-    private bool _roguelikeStartWithSeed = false;
-
     /// <summary>
-    /// Gets or sets a value indicating whether start with seed when investing in Sarkaz.
+    /// Gets or sets a value indicating whether start with seed
     /// </summary>
     public bool RoguelikeStartWithSeed
     {
-        get => _roguelikeStartWithSeed;
-        set {
-            SetAndNotify(ref _roguelikeStartWithSeed, value);
-        }
+        get => GetTaskConfig<RoguelikeTask>().StartWithSeed;
+        set => SetTaskConfig<RoguelikeTask>(t => t.StartWithSeed == value, t => t.StartWithSeed = value);
+    }
+
+    /// <summary>
+    /// Gets or sets the seed value for the roguelike task.
+    /// </summary>
+    public string RoguelikeSeed
+    {
+        get => GetTaskConfig<RoguelikeTask>().Seed;
+        set => SetTaskConfig<RoguelikeTask>(t => t.Seed == value, t => t.Seed = value);
     }
 
     public override void RefreshUI(BaseTask baseTask)
@@ -1049,82 +1055,6 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel
         }
     }
 
-    [Obsolete("使用SerializeTask作为代替")]
-    public override (AsstTaskType Type, JObject Params) Serialize()
-    {
-        var task = new AsstRoguelikeTask() {
-            Theme = RoguelikeTheme,
-            Mode = RoguelikeMode,
-            Starts = RoguelikeStartsCount,
-            Difficulty = RoguelikeDifficulty,
-            Squad = RoguelikeSquad,
-            Roles = RoguelikeRoles,
-            CoreChar = DataHelper.GetCharacterByNameOrAlias(RoguelikeCoreChar)?.Name ?? RoguelikeCoreChar,
-            UseSupport = !string.IsNullOrEmpty(RoguelikeCoreChar) && RoguelikeUseSupportUnit,
-            UseSupportNonFriend = RoguelikeEnableNonfriendSupport,
-
-            InvestmentEnabled = RoguelikeInvestmentEnabled,
-            InvestmentCount = RoguelikeInvestsCount,
-            InvestmentStopWhenFull = RoguelikeStopWhenInvestmentFull && RoguelikeMode != Mode.Collectible,
-            InvestmentWithMoreScore = RoguelikeInvestmentWithMoreScoreRaw && RoguelikeMode == Mode.Investment,
-            RefreshTraderWithDice = RoguelikeTheme == Theme.Mizuki && RoguelikeRefreshTraderWithDiceRaw,
-
-            StopAtFinalBoss = RoguelikeStopAtFinalBoss,
-            StopAtMaxLevel = RoguelikeStopAtMaxLevel,
-
-            // 刷开局
-            CollectibleModeSquad = RoguelikeCollectibleModeSquad,
-            CollectibleModeShopping = RoguelikeCollectibleModeShopping,
-            StartWithEliteTwo = RoguelikeStartWithEliteTwo && RoguelikeSquadIsProfessional && RoguelikeTheme is Theme.Mizuki or Theme.Sami,
-            StartWithEliteTwoNonBattle = RoguelikeOnlyStartWithEliteTwo && RoguelikeTheme is Theme.Mizuki or Theme.Sami,
-
-            // 月度小队
-            MonthlySquadAutoIterate = RoguelikeMonthlySquadAutoIterate,
-            MonthlySquadCheckComms = RoguelikeMonthlySquadCheckComms,
-
-            // 深入探索
-            DeepExplorationAutoIterate = RoguelikeDeepExplorationAutoIterate,
-
-            // 刷常乐节点
-            FindPlaytimeTarget = RoguelikeFindPlaytimeTarget,
-
-            SamiFirstFloorFoldartal = RoguelikeTheme == Theme.Sami && RoguelikeMode == Mode.Collectible && Roguelike3FirstFloorFoldartal,
-            SamiStartFloorFoldartal = Roguelike3FirstFloorFoldartals,
-            SamiNewSquad2StartingFoldartal = Roguelike3NewSquad2StartingFoldartal && RoguelikeSquadIsFoldartal,
-            SamiNewSquad2StartingFoldartals = Roguelike3NewSquad2StartingFoldartals.Split(';').Where(i => !string.IsNullOrEmpty(i)).Take(3).ToList(),
-
-            ExpectedCollapsalParadigms = RoguelikeExpectedCollapsalParadigms.Split(';').Where(i => !string.IsNullOrEmpty(i)).ToList(),
-            StartWithSeed = RoguelikeStartWithSeed && RoguelikeTheme == Theme.Sarkaz && RoguelikeMode == Mode.Investment && RoguelikeSquad is "点刺成锭分队" or "后勤分队",
-        };
-
-        if (RoguelikeMode == Mode.Collectible && !RoguelikeOnlyStartWithEliteTwo)
-        {
-            var rewardKeys = new Dictionary<RoguelikeCollectibleAward, string>
-            {
-                { RoguelikeCollectibleAward.HotWater, "hot_water" },
-                { RoguelikeCollectibleAward.Shield, "shield" },
-                { RoguelikeCollectibleAward.Ingot, "ingot" },
-                { RoguelikeCollectibleAward.Hope, "hope" },
-                { RoguelikeCollectibleAward.Random, "random" },
-                { RoguelikeCollectibleAward.Key, "key" },
-                { RoguelikeCollectibleAward.Dice, "dice" },
-                { RoguelikeCollectibleAward.Idea, "ideas" },
-                { RoguelikeCollectibleAward.Ticket, "ticket" },
-            };
-
-            var startWithSelect = new JObject();
-            foreach (var select in RoguelikeStartWithSelectList.Cast<GenericCombinedData<RoguelikeCollectibleAward>>())
-            {
-                if (rewardKeys.TryGetValue(select.Value, out var paramKey))
-                {
-                    task.CollectibleModeStartRewards[paramKey] = true;
-                }
-            }
-        }
-
-        return task.Serialize();
-    }
-
     public override bool? SerializeTask(BaseTask? baseTask, int? taskId = null)
     {
         if (baseTask is not RoguelikeTask roguelike)
@@ -1177,7 +1107,7 @@ public class RoguelikeSettingsUserControlModel : TaskSettingsViewModel
 
             ExpectedCollapsalParadigms = [.. roguelike.ExpectedCollapsalParadigms.Split(';').Where(i => !string.IsNullOrEmpty(i))],
 
-            // StartWithSeed = roguelike.StartWithSeed && RoguelikeTheme == Theme.Sarkaz && RoguelikeMode == Mode.Investment && RoguelikeSquad is "点刺成锭分队" or "后勤分队",
+            StartWithSeed = roguelike.StartWithSeed ? roguelike.Seed : null,
         };
 
         if (RoguelikeMode == Mode.Collectible && !RoguelikeOnlyStartWithEliteTwo)

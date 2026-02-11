@@ -24,7 +24,7 @@ namespace MaaWpfGui.Services.Web;
 
 public class MaaApiService : IMaaApiService
 {
-    private static readonly string CacheDir = PathsHelper.BaseDir + "/cache/";
+    private static readonly string CacheDir = PathsHelper.CacheDir;
 
     public async Task<JObject?> RequestMaaApiWithCache(string api, bool allowFallbackToCache = true)
     {
@@ -45,7 +45,7 @@ public class MaaApiService : IMaaApiService
     private async Task<JObject?> TryRequest(string api, string baseUrl, bool allowFallbackToCache = true)
     {
         var url = baseUrl + api;
-        var cache = CacheDir + api;
+        var cache = Path.Combine(CacheDir, api);
 
         var response = await ETagCache.FetchResponseWithEtag(url, !File.Exists(cache));
         if (response == null)
@@ -92,7 +92,7 @@ public class MaaApiService : IMaaApiService
 
     public JObject? LoadApiCache(string api)
     {
-        var cache = CacheDir + api;
+        var cache = Path.Combine(CacheDir, api);
         if (!File.Exists(cache))
         {
             return null;

@@ -15,7 +15,7 @@ icon: iconoir:developer
 
 ## 我不懂编程，只是想改一点点 JSON 文件/文档等，要怎么操作？
 
-欢迎收看 [牛牛也能看懂的 GitHub Pull Request 使用指南](./pr-tutorial.md) （纯网页端操作 Github.com）
+欢迎收看 [牛牛也能看懂的 GitHub Pull Request 使用指南](./pr-tutorial.md) （纯网页端操作 GitHub.com）
 
 ## 我只想简单修改几行代码，但配置环境太麻烦，纯网页编辑又很难用，怎么办？
 
@@ -64,8 +64,7 @@ icon: iconoir:developer
 6. 执行 cmake 项目配置
 
    ```cmd
-   mkdir -p build
-   cmake -G "Visual Studio 18 2026" -B build -DBUILD_WPF_GUI=ON -DBUILD_DEBUG_DEMO=ON
+   cmake --preset windows-x64
    ```
 
 7. 双击打开 `build/MAA.slnx` 文件，Visual Studio 会自动加载整个项目。
@@ -127,6 +126,42 @@ icon: iconoir:developer
 在打开 VS 之后，和 Git 有关的操作可以不用命令行工具，直接使用 VS 自带的“Git 更改”即可
 :::
 
+## 使用 VS Code 进行开发（可选）
+
+::: warning
+**推荐优先使用 Visual Studio 进行开发。** MAA 项目主要基于 Visual Studio 构建，上述完整环境配置流程已涵盖所有开发需求，开箱即用体验最佳。VSCode 方案仅作为备选，适合已经熟悉 VS Code + CMake + clangd 工作流的开发者，配置门槛相对较高。
+:::
+
+如果你偏好使用 VSCode，可以配合 CMake、clangd 等扩展获得代码补全、跳转和调试能力。在完成前述 1–6 步（克隆、依赖、CMake 配置）后，可按以下步骤配置：
+
+### 推荐扩展
+
+在 VS Code 扩展市场安装：
+
+| 扩展                                                                                                | 作用                                                |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)            | CMake 配置、构建、调试集成                          |
+| [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) | C++ 智能提示、代码跳转、诊断（基于 LSP）            |
+| [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)                     | 调试 C++ 程序（与 CMake Tools 或 launch.json 配合） |
+
+::: tip
+使用 clangd 时，建议禁用 C/C++ 扩展的 IntelliSense（`C_Cpp.intelliSenseEngine` 设为 `disabled`），避免与 clangd 冲突。
+:::
+
+### 配置步骤
+
+1. 用 VS Code 打开项目根目录
+2. 使用 **CMake Tools**：
+   - 状态栏选择 Configure Preset（如 `windows-x64`、`linux-x64` 等）
+   - 选择 Build Preset，执行配置与构建
+3. 使用 **clangd**：在 Windows 上配合 MSVC 使用时无需 `compile_commands.json` 即可正常开发。Linux/macOS 下预设已开启 `CMAKE_EXPORT_COMPILE_COMMANDS`，clangd 会自动使用 `build/compile_commands.json`
+4. **调试**：项目已包含 `.vscode/launch.json`，可直接启动 MaaWpfGui 或 Debug Demo 进行调试
+
+### 快速构建与调试
+
+- **构建**：`Ctrl+Shift+B` 或通过 CMake Tools 状态栏
+- **调试**：F5 或运行与调试面板选择对应配置
+
 ## MAA 的文件格式化要求
 
 MAA 使用一系列的格式化工具来保证仓库中的代码和资源文件美观统一，以便于维护和阅读
@@ -138,7 +173,7 @@ MAA 使用一系列的格式化工具来保证仓库中的代码和资源文件�
 | 文件类型  | 格式化工具                                                      |
 | --------- | --------------------------------------------------------------- |
 | C++       | [clang-format](https://clang.llvm.org/docs/ClangFormat.html)    |
-| Json/Yaml | [Prettier](https://prettier.io/)                                |
+| JSON/YAML | [Prettier](https://prettier.io/)                                |
 | Markdown  | [markdownlint](https://github.com/DavidAnson/markdownlint-cli2) |
 
 ### 利用 Pre-commit Hooks 自动进行代码格式化

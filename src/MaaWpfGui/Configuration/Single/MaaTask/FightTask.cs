@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using MaaWpfGui.Constants.Enums;
 using static MaaWpfGui.Main.AsstProxy;
 
 namespace MaaWpfGui.Configuration.Single.MaaTask;
@@ -127,6 +128,8 @@ public class FightTask : BaseTask, IJsonOnDeserialized
     /// </summary>
     public bool HideSeries { get; set; }
 
+    public FightStageResetMode StageResetMode { get; set; } = FightStageResetMode.Current;
+
     /// <summary>
     /// Gets or sets a value indicating whether 是否启用周计划
     /// </summary>
@@ -139,6 +142,10 @@ public class FightTask : BaseTask, IJsonOnDeserialized
         if (UseStoneAllowSave == false)
         {
             UseStone = false;
+        }
+        if (!UseOptionalStage)
+        {
+            StagePlan = StagePlan.Count == 1 ? StagePlan : [.. StagePlan.Append(string.Empty).Take(1)];
         }
     }
 }

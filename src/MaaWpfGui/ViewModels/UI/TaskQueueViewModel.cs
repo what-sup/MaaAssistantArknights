@@ -163,6 +163,7 @@ public class TaskQueueViewModel : Screen
             }
             else if (e.Action == NotifyCollectionChangedAction.Add)
             {
+                EnableAfterActionSetting = false;
                 TaskItemViewModels[e.NewStartingIndex].Index = e.NewStartingIndex;
                 TaskItemViewModels.FirstOrDefault(i => i.EnableSetting)?.EnableSetting = false;
                 TaskItemViewModels[e.NewStartingIndex].EnableSetting = true;
@@ -175,7 +176,8 @@ public class TaskQueueViewModel : Screen
                     ConfigFactory.CurrentConfig.TaskQueue.RemoveAt(e.OldStartingIndex);
                 }
 
-                for (int i = e.OldStartingIndex; i < TaskItemViewModels.Count; i++) // 更新后续任务的索引
+                // 更新后续任务的索引
+                for (int i = e.OldStartingIndex; i < TaskItemViewModels.Count; i++)
                 {
                     TaskItemViewModels[i].Index = i;
                 }
@@ -298,7 +300,7 @@ public class TaskQueueViewModel : Screen
 
     private static int MaxLogItemsWithThumbnails => SettingsViewModel.GuiSettings.MaxNumberOfLogThumbnails;
 
-    private async Task AttachThumbnailToCardAsync(LogCardItemViewModel card, bool forceScreencap)
+    private async Task AttachThumbnailToCardAsync(LogCardItemViewModel card, bool forceScreencap, bool setToolTipOnLastLogItem = false)
     {
         if (card is null)
         {
@@ -322,6 +324,13 @@ public class TaskQueueViewModel : Screen
                 }
                 card.Thumbnail = thumbnail;
                 TrimOldThumbnails();
+
+                // 若需要将当前 Card 图片作为 ToolTip，在缩略图挂载完成后设置最后一条日志的 ToolTip
+                if (setToolTipOnLastLogItem && card.Items.Count > 0)
+                {
+                    var lastLogItem = card.Items[^1];
+                    lastLogItem.ToolTip = thumbnail?.CreateTooltip();
+                }
             });
         }
         catch
@@ -987,6 +996,13 @@ public class TaskQueueViewModel : Screen
     public string GetValidStage(string stage) => IsStageOpen(stage) ? stage : string.Empty;
 
     /// <summary>
+    /// Returns whether the task is enabled
+    /// </summary>
+    /// <param name="baseTask">The TaskQueue task</param>
+    /// <returns>whether the task is enabled</returns>
+    public static bool IsTaskEnable(BaseTask baseTask) => baseTask.IsEnable is true || (baseTask.IsEnable is null && !GuiSettingsUserControlModel.Instance.MainTasksInvertNullFunction);
+
+    /// <summary>
     /// 更新日期提示和关卡列表
     /// </summary>
     public void UpdateDatePromptAndStagesLocally()
@@ -1116,8 +1132,16 @@ public class TaskQueueViewModel : Screen
     /// <param name="toolTip">The toolTip</param>
     /// <param name="updateCardImage">Whether to update the containing card's image/thumbnail.</param>
     /// <param name="fetchLatestImage">Whether to force fetching a fresh screenshot instead of using cache.</param>
+    /// <param name="useCardImageAsToolTip">Whether to use the current card's image as toolTip.</param>
     /// <param name="splitMode">Whether to split cards before/after this log.</param>
-    public void AddLog(string? content, string color = UiLogColor.Trace, string weight = "Regular", ToolTip? toolTip = null, bool updateCardImage = false, bool fetchLatestImage = false, LogCardSplitMode splitMode = LogCardSplitMode.None)
+    public void AddLog(string? content,
+        string color = UiLogColor.Trace,
+        string weight = "Regular",
+        ToolTip? toolTip = null,
+        bool updateCardImage = false,
+        bool fetchLatestImage = false,
+        bool useCardImageAsToolTip = false,
+        LogCardSplitMode splitMode = LogCardSplitMode.None)
     {
         bool isEmpty = string.IsNullOrEmpty(content);
         bool needsBeforeSplit = splitMode == LogCardSplitMode.Before || splitMode == LogCardSplitMode.Both;
@@ -1137,7 +1161,6 @@ public class TaskQueueViewModel : Screen
 
             if (LogCardViewModels.Count > 0)
             {
-                // 如果有内容，添加到卡片
                 if (!isEmpty)
                 {
                     TryMergeIntoLastCard(content!, color, weight, toolTip);
@@ -1145,7 +1168,7 @@ public class TaskQueueViewModel : Screen
 
                 if (updateCardImage)
                 {
-                    _ = AttachThumbnailToCardAsync(LogCardViewModels[^1], fetchLatestImage);
+                    _ = AttachThumbnailToCardAsync(LogCardViewModels[^1], fetchLatestImage, setToolTipOnLastLogItem: useCardImageAsToolTip);
                 }
             }
 
@@ -1279,9 +1302,10 @@ public class TaskQueueViewModel : Screen
             return;
         }
 
+        var taskType = ConfigFactory.CurrentConfig.TaskQueue[taskItem.Index].TaskType;
         var currentName = taskItem.Name;
         var dialog = new Views.Dialogs.TextDialogUserControl(
-            LocalizationHelper.GetString("RenameTask"),
+            LocalizationHelper.GetString("RenameTask") + $" {taskItem.Index + 1}-{LocalizationHelper.GetString(taskType.ToString())}",
             LocalizationHelper.GetString("RenameTaskPrompt"),
             currentName) {
             Owner = Application.Current.MainWindow,
@@ -1316,7 +1340,7 @@ public class TaskQueueViewModel : Screen
 
         var taskType = ConfigFactory.CurrentConfig.TaskQueue[taskItem.Index].TaskType;
         var result = MessageBoxHelper.Show(
-            string.Format(LocalizationHelper.GetString("ConfirmDeleteTaskMessage"), LocalizationHelper.GetString(taskType.ToString()), taskItem.Name),
+            string.Format(LocalizationHelper.GetString("ConfirmDeleteTaskMessage"), $"{taskItem.Index + 1}-{LocalizationHelper.GetString(taskType.ToString())}", taskItem.Name),
             LocalizationHelper.GetString("ConfirmDeleteTask"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
@@ -1457,7 +1481,8 @@ public class TaskQueueViewModel : Screen
     /// <summary>
     /// 还原所有临时变量（右键半选）
     /// </summary>
-    public void ResetAllTemporaryVariable()
+    /// <param name="refreshUI">是否刷新UI</param>
+    public void ResetAllTemporaryVariable(bool refreshUI = true)
     {
         foreach (var item in ConfigFactory.CurrentConfig.TaskQueue)
         {
@@ -1465,7 +1490,7 @@ public class TaskQueueViewModel : Screen
             {
                 case FightTask fight:
                     FightSettingsUserControlModel.ResetFightVariables(fight);
-                    if (TaskSettingVisibilityInfo.CurrentTask == fight)
+                    if (refreshUI && TaskSettingVisibilityInfo.CurrentTask == fight)
                     {
                         RefreshTaskModel(fight);
                     }
@@ -1473,7 +1498,7 @@ public class TaskQueueViewModel : Screen
 
                 case RecruitTask recruit:
                     RecruitSettingsUserControlModel.ResetRecruitVariables(recruit);
-                    if (TaskSettingVisibilityInfo.CurrentTask == recruit)
+                    if (refreshUI && TaskSettingVisibilityInfo.CurrentTask == recruit)
                     {
                         RefreshTaskModel(recruit);
                     }
@@ -1695,7 +1720,12 @@ public class TaskQueueViewModel : Screen
         int count = 0;
         foreach (var (index, item) in ConfigFactory.CurrentConfig.TaskQueue.Select((task, i) => (i, task)))
         {
-            if (item.IsEnable == false || (GuiSettingsUserControlModel.Instance.MainTasksInvertNullFunction && item.IsEnable != true))
+            _logger.Information("Index {Index}, Type {TaskType}, Name {TaskName}, IsEnable {IsEnable}",
+                index,
+                item.TaskType,
+                item.Name,
+                item.IsEnable);
+            if (!IsTaskEnable(item))
             {
                 Instances.TaskQueueViewModel.TaskItemViewModels[index].Status = 4;
                 continue;

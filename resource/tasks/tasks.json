@@ -220,7 +220,8 @@
     "EnterEpisodeNew": {
         "Doc": "base_task",
         "template": "empty.png",
-        "action": "ClickSelf"
+        "action": "ClickSelf",
+        "next": ["EnterEpisodeNew-Click"]
     },
     "00@EnterEpisodeNew": {},
     "01@EnterEpisodeNew": {},
@@ -239,6 +240,12 @@
     "14@EnterEpisodeNew": {},
     "15@EnterEpisodeNew": {},
     "16@EnterEpisodeNew": {},
+    "EnterEpisodeNew-Click": {
+        "algorithm": "OcrDetect",
+        "action": "ClickSelf",
+        "text": ["前往章节"],
+        "roi": [1078, 595, 112, 42]
+    },
     "EnterEpisode": {
         "Doc": "base_task",
         "baseTask": "EpisodeOcrReplace",
@@ -761,7 +768,7 @@
         "Doc": "该任务的 ocrReplace 被所有涉及干员名的识别任务复用，中文被拆成3字节处理，需要包括号",
         "fullMatch": true,
         "ocrReplace": [
-            ["^(?:[<4~]|《|。)+", ""],
+            ["^(?:[<4~]|《|。ぐ)+", ""],
             ["^c(?!ast)", ""],
             ["^\\^一", ""],
             ["^_(?=.)", ""],
@@ -782,14 +789,14 @@
             [".*威龙陈", "假日威龙陈"],
             ["青积", "青枳"],
             [".*烬艾雅法.*", "纯烬艾雅法拉"],
-            ["^(山.+|一山$)", "山"],
+            ["^(山|一山)$", "山"],
             ["^一余$", "余"],
             ["^一锏$", "锏"],
-            ["^(煌.*|一煌$)", "煌"],
-            ["^(年.?|一年)$", "年"],
+            ["^(煌|一煌)$", "煌"],
+            ["^(年|一年)$", "年"],
             ["^(委|泰|一黍)$", "黍"],
-            ["^(令.+|一令$)", "令"],
-            ["^(夕.*|H$|一夕$)", "夕"],
+            ["^(令|一令)$", "令"],
+            ["^(夕|H|一夕)$", "夕"],
             ["12E", "12F"],
             ["归.*幽灵鲨", "归溟幽灵鲨"],
             ["(临六$|^临光.*)", "临光"],
@@ -828,7 +835,8 @@
             ["^(“|”|\\\\|\")?斩(“|”|\\\\|\")?$", "“斩”"],
             ["八.*海铃", "八幡海铃"],
             [".*英调香师", "撷英调香师"],
-            ["矿石.*杀手.*", "矿石“杀手”"]
+            ["矿石.*杀手.*", "矿石“杀手”"],
+            [".*涤火杰西卡", "涤火杰西卡"]
         ]
     },
     "SwitchAccount@StartUpBegin": {
@@ -3617,6 +3625,17 @@
     "BattleQuickFormation-OperNameFlag7": {
         "baseTask": "BattleQuickFormation-OperNameFlagBase"
     },
+    "BattleQuickFormation-Level": {
+        "algorithm": "OcrDetect",
+        "text": [],
+        "rectMove_Doc": "基于BattleQuickFormation-OperNameFlag进行偏移",
+        "rectMove": [-1, 201, 39, 24],
+        "isAscii": true
+    },
+    "BattleQuickFormation-Elite": {
+        "template": ["BattleQuickFormation-Elite2.png", "BattleQuickFormation-Elite1.png"],
+        "rectMove": [7, 151, 24, 35]
+    },
     "BattleQuickFormationOCR": {
         "algorithm": "OcrDetect",
         "fullMatch": true,
@@ -4001,17 +4020,14 @@
         "useRaw": false,
         "ocrReplace": [
             ["—{1,2}", "-"],
-            ["[Oo]", "0"],
-            ["[Ii]", "1"],
-            ["[Ll]", "1"],
-            ["\\|", "1"],
+            ["-[IiLl\\|]", "1"],
+            ["-\\d+[Oo]", "0"],
             ["^.+-EX-?\\d+.*$", "_INVALID_"],
             ["^.+-S-?\\d+.*$", "_INVALID_"],
             ["^.+-MO-?\\d+.*$", "_INVALID_"],
             ["^OF-1$", "_INVALID_"],
             ["^Ap-", "AP-"],
-            ["^Bl-", "BI-"],
-            ["-1O$", "-10"]
+            ["^Bl-", "BI-"]
         ],
         "roi": [140, 60, 200, 55]
     },
@@ -4129,8 +4145,9 @@
             ["[Oo]", "0"],
             ["[Ii]", "1"],
             ["[Ll]", "1"],
-            ["\\|", "1"],
+            ["[\\{\\}\\[\\]]", "1"],
             ["B", "8"],
+            ["台", "8"],
             ["十", "+"],
             ["萬", "万"],
             ["만", "万"],

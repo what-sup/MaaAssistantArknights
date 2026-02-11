@@ -139,7 +139,7 @@
     <system:String x:Key="ClueExchangeUnlocked">Clue Exchange Unlocked</system:String>
     <system:String x:Key="InfrastReceptionSendClue">Send Clues</system:String>
     <system:String x:Key="ReceptionOptionsRequireInfrast">The following functions require configuration and execution within {key=Infrast}.</system:String>
-    <system:String x:Key="ContinueTraining">After training is complete, try to continue mastering the current skill</system:String>
+    <system:String x:Key="ContinueTraining">After training is complete, try to continue mastering the current Skill</system:String>
     <system:String x:Key="TrainingIdle">Training room is vacant</system:String>
     <system:String x:Key="TrainingCompleted">Training completed</system:String>
     <system:String x:Key="TrainingLevel">Skill Rank</system:String>
@@ -188,7 +188,7 @@ To customize rotation schedules, please use ｢{key=InfrastModeCustom}｣.</syst
     <system:String x:Key="InfrastThresholdTip">If custom shifts are enabled, this field is only valid for rooms with autofill and {key=Operator} groups</system:String>
     <system:String x:Key="RoguelikeStrategyExp">Gain Experience Points, clear as many nodes as possible</system:String>
     <system:String x:Key="RoguelikeStrategyGold">Invests coins, exits automatically after investment completes</system:String>
-    <system:String x:Key="RoguelikeStrategyLastReward">Grind to obtain Hot Water Kettle or Elite II {key=Operator}s</system:String>
+    <system:String x:Key="RoguelikeStrategyLastReward">Grind to obtain Hot Water Kettle or Elite 2 {key=Operator}s</system:String>
     <system:String x:Key="RoguelikeStrategyCollapse">Farm collapse paradigms, restart immediately after encountering a non-rare collapse paradigm</system:String>
     <system:String x:Key="RoguelikeCollectibleModeSquad">Squad to get collectibles</system:String>
     <system:String x:Key="RoguelikeStrategyMonthlySquad">Grind Monthly Squad, clear as far as possible</system:String>
@@ -217,7 +217,8 @@ To customize rotation schedules, please use ｢{key=InfrastModeCustom}｣.</syst
     <system:String x:Key="RoguelikeDelayAbortUntilCombatComplete">Don't abort Auto IS until the end of battle</system:String>
     <system:String x:Key="RoguelikeStopAtFinalBoss">Stop before final boss</system:String>
     <system:String x:Key="RoguelikeStopAtMaxLevel">Stop when max level is achieved</system:String>
-    <system:String x:Key="RoguelikeStartWithSeed">Enable Investment Seed</system:String>
+    <system:String x:Key="RoguelikeStartWithSeed">Start with seed</system:String>
+    <!--<system:String x:Key="RoguelikeStartWithSeed">Enable Investment Seed</system:String>-->
     <system:String x:Key="RoguelikeMonthlySquadAutoIterate">Monthly Squad Auto-Switch</system:String>
     <system:String x:Key="RoguelikeMonthlySquadCheckComms">Monthly Squad Communication</system:String>
     <system:String x:Key="RoguelikeDeepExplorationAutoIterate">Deep Investigation Auto-Switch</system:String>
@@ -248,6 +249,9 @@ To customize rotation schedules, please use ｢{key=InfrastModeCustom}｣.</syst
     <system:String x:Key="IS5NewSquad6">Cluster of Blooms Squad (花团锦簇分队)</system:String>
     <system:String x:Key="IS5NewSquad7">Daring Gambit Squad (棋行险着分队)</system:String>
     <system:String x:Key="IS5NewSquad8">Echoes of Time Squad (岁影回音分队)</system:String>
+    <system:String x:Key="IS5NewSquad9">Agent Squad (代理人分队)</system:String>
+    <system:String x:Key="IS5NewSquad10">Knowledge Squad (知学分队)</system:String>
+    <system:String x:Key="IS5NewSquad11">Merchant Squad (商贾分队)</system:String>
     <system:String x:Key="SpecialForceSquad">Special Squad</system:String>
     <system:String x:Key="LeaderSquad">Leader Squad</system:String>
     <system:String x:Key="GatheringSquad">Gathering Squad</system:String>
@@ -363,7 +367,7 @@ You can cancel this popup by clicking the ｢{key=Settings} - {key=IssueReport}�
 </system:String>
     <system:String x:Key="GlobalSource">Global Source</system:String>
     <system:String x:Key="ForceGithubGlobalSource">Force using GitHub</system:String>
-    <system:String x:Key="ForceGithubGlobalSourceTip">When updates are detected, force download update packages from Github</system:String>
+    <system:String x:Key="ForceGithubGlobalSourceTip">When updates are detected, force download update packages from GitHub</system:String>
     <system:String x:Key="MirrorChyan">MirrorChyan</system:String>
     <system:String x:Key="MirrorChyanSelectedButNoCdk">Please go to ｢{key=Settings} - {key=UpdateSettings}｣ to configure MirrorChyan CDK or switch to Global Source.</system:String>
     <system:String x:Key="MirrorChyanResourceUpdateTip">Resource update {0} detected. Please go to ｢{key=Settings} - {key=UpdateSettings} - {key=ResourceUpdate}｣ to update manually, or fill in MirrorChayn CDK to update automatically.</system:String>
@@ -584,6 +588,7 @@ Then delete the entries corresponding to the paths.
     <system:String x:Key="UseAlternateStage">Use alternative stage</system:String>
     <system:String x:Key="UseExpiringMedicine">Unlimited use of expiring (&lt;48h) sanity potion</system:String>
     <system:String x:Key="HideUnavailableStage">Hide today's not open stages</system:String>
+    <system:String x:Key="FightStageResetMode">Unopened stage is reset to</system:String>
     <system:String x:Key="HideSeries">Hide series</system:String>
     <system:String x:Key="MainViewButtonFeature">Variable function button</system:String>
     <system:String x:Key="CustomStageCode">Manual entry of stage names</system:String>
@@ -735,14 +740,15 @@ If the number of battles is not enough to complete the set multiplier (such as o
 • {key=NotSwitch}:
 Do not adjust the proxy multiplier setting in the game</system:String>
     <system:String x:Key="StageSelect">Stage</system:String>
-    <system:String x:Key="StageSelect2">Alternative</system:String>
-    <system:String x:Key="AddStage">Add stage</system:String>
+    <system:String x:Key="StageSelect2">Candidates</system:String>
+    <system:String x:Key="AddStage">Add candidate</system:String>
     <system:String x:Key="RemainingSanityStage">Remaining Sanity</system:String>
     <system:String x:Key="NoUse">No Use</system:String>
     <!--<system:String x:Key="Amend">Amend</system:String>-->
     <!--<system:String x:Key="CurrentStage">Current Stage</system:String>-->
     <!--<system:String x:Key="LastBattle">Last Battle</system:String>-->
     <system:String x:Key="DefaultStage">Cur/Last</system:String>
+    <!--<system:String x:Key="InvalidStage">Invalid</system:String>-->
     <system:String x:Key="ClosedStage">The event is not open</system:String>
     <system:String x:Key="UnsupportedStages">Unsupported stages</system:String>
     <system:String x:Key="LowVersion">Old Version, Update required</system:String>
@@ -768,7 +774,7 @@ Do not adjust the proxy multiplier setting in the game</system:String>
     <system:String x:Key="AnnihilationStage">Annihilation Stage</system:String>
     <system:String x:Key="UseCustomAnnihilation">Custom {key=AnnihilationStage}</system:String>
     <system:String x:Key="AnnihilationMode">Annihilation Mode</system:String>
-    <system:String x:Key="Annihilation">Current Annihilation</system:String>
+    <system:String x:Key="Annihilation.Current">Current Annihilation</system:String>
     <system:String x:Key="Chernobog">Chernobog</system:String>
     <system:String x:Key="LungmenOutskirts">Lungmen Outskirts</system:String>
     <system:String x:Key="LungmenDowntown">Lungmen Downtown</system:String>
@@ -906,7 +912,7 @@ Only level rewards can be farmed; to get the Engraved Medal, all ｢Key Objectiv
     <system:String x:Key="MiniGame@AT@ConversationRoomTip" xml:space="preserve">Start the task from the event screen (there is a ｢OPEN｣ button in the bottom right corner).</system:String>
     <system:String x:Key="MiniGame@ALL@GreenGrass">Duel Channel: Green Grassville</system:String>
     <system:String x:Key="MiniGame@ALL@GreenGrassTip" xml:space="preserve">Manually skip the tutorial dialogue, then you can exit directly.&#10;Start the task from the event screen (there is a ｢Join Event｣ button in the bottom right corner).&#10;&#10;Follow the Duck Lord's choice.</system:String>
-    <system:String x:Key="MiniGame@ALL@HoneyFruit">Contest Channel: Honeydew</system:String>
+    <system:String x:Key="MiniGame@ALL@HoneyFruit">Duel Channel: Honeydew</system:String>
     <system:String x:Key="MiniGame@ALL@HoneyFruitTip" xml:space="preserve">{key=MiniGame@ALL@GreenGrassTip}</system:String>
     <system:String x:Key="MiniGame@SecretFront@Ending">Ending</system:String>
     <system:String x:Key="MiniGame@SecretFront@Event">Priority for Series of Events</system:String>
@@ -956,7 +962,7 @@ Only level rewards can be farmed; to get the Engraved Medal, all ｢Key Objectiv
     <system:String x:Key="Copilot.IgnoreRequirements.Tip" xml:space="preserve">Some jobs require specific Modules or other prerequisites.
 Enabling this will skip these checks, but may cause the job to fail.</system:String>
     <system:String x:Key="AddUserAdditional">Add custom {key=Operator}s</system:String>
-    <system:String x:Key="AddUserAdditionalTip">Use ｢;｣ as the separator, ｢,｣ to separate the {key=Operator} name and skills, for example: W, 3; Ash, 2</system:String>
+    <system:String x:Key="AddUserAdditionalTip">Use ｢;｣ as the separator, ｢,｣ to separate the {key=Operator} name and Skills, for example: W, 3; Ash, 2</system:String>
     <system:String x:Key="UserAdditional.OperatorName">{key=Operator} Name</system:String>
     <system:String x:Key="UserAdditional.Skill">Skill</system:String>
     <system:String x:Key="UserAdditional.Action">Action</system:String>
@@ -978,6 +984,7 @@ Right click to add challenge difficulty</system:String>
 Right-click to clear inactive jobs</system:String>
     <system:String x:Key="Start">Start</system:String>
     <system:String x:Key="VideoLink">Video Link</system:String>
+    <system:String x:Key="CopilotFormationRequirement.Level">E{0} Lv.{1}</system:String>
     <system:String x:Key="CopilotSkill">Skill</system:String>
     <system:String x:Key="CopilotModule">Module</system:String>
     <system:String x:Key="CopilotWithoutModule">Without Module</system:String>
@@ -1008,7 +1015,7 @@ Right-click to clear inactive jobs</system:String>
         1. Before using, please confirm the job file matches your selected stage type.\n\n
         2. {key=MainStage}, {key=StoryCollection}, {key=SideStory}: Please start from the screen where the blue "Start" button appears in the bottom right corner.\n\n
         3. {key=SSS}: Multiple built-in files are in the resource/copilot folder. First create your squad manually, then start from the screen where the "Start Deployment" button appears in the bottom right. Can be used with ｢{key=LoopTimes}｣.\n\n
-        4. {key=ParadoxSimulation}: After selecting skills, start from the skill selection screen where the "Start Simulation" button appears. For 1/2★ {key=Operator}s (without skills), start from the screen with the "Start Simulation" button in the bottom right. If using ｢{key=UseCopilotList}｣, please start from the ｢Level/Rarity｣ tab in the {key=Operator} list.\n\n
+        4. {key=ParadoxSimulation}: After selecting Skills, start from the Skill selection screen where the "Start Simulation" button appears. For 1/2★ {key=Operator}s (without Skills), start from the screen with the "Start Simulation" button in the bottom right. If using ｢{key=UseCopilotList}｣, please start from the ｢Level/Rarity｣ tab in the {key=Operator} list.\n\n
         5. When using a support unit, turn off ｢{key=AutoSquad}｣ and ｢{key=UseCopilotList}｣, manually select the {key=Operator}, then start from the squad screen where the "Mission Start" button appears in the bottom right.\n\n
         6. {key=Operator}s marked as "Favorite" may affect ｢{key=AutoSquad}｣ recognition and selection. When using ｢{key=AutoSquad}｣, consider removing favorites, or if errors occur, turn off ｢{key=AutoSquad}｣ and manually supplement the missing {key=Operator}s as prompted.\n\n
         7. In the Copilot workstation, you can paste codes by clicking the paste button on the right side of the input box:\n
@@ -1024,9 +1031,9 @@ Right-click to clear inactive jobs</system:String>
     <system:String x:Key="CopilotFileReadError">Failed to read file!</system:String>
     <system:String x:Key="CopilotNoFound">No corresponding file found!</system:String>
     <system:String x:Key="NetworkServiceError">Network service error!</system:String>
-    <system:String x:Key="CopilotJsonError">Copilot Json Error!</system:String>
+    <system:String x:Key="CopilotJsonError">Copilot JSON Error!</system:String>
     <system:String x:Key="NotCopilotJson">Malformed file!</system:String>
-    <system:String x:Key="CheckTheFile">Malformed Copilot Json!</system:String>
+    <system:String x:Key="CheckTheFile">Malformed Copilot JSON!</system:String>
     <system:String x:Key="CopilotSSSNotSupport">Unsupported type: SSS</system:String>
     <system:String x:Key="CopilotInvalidStageNameForNavigation">Invalid stage name for navigation</system:String>
     <system:String x:Key="CopilotStageNameNotFound">{0} not found, and also no stage name specified</system:String>
@@ -1205,8 +1212,10 @@ Right-click to clear inactive jobs</system:String>
     <system:String x:Key="BattleFormationParseFailed">Formation parse failed</system:String>
     <system:String x:Key="BattleFormationSelected" xml:space="preserve">Selected:&#160;</system:String>
     <system:String x:Key="BattleFormationOperUnavailable" xml:space="preserve">{key=Operator} unavailable: {0}, reason: {1}</system:String>
+    <system:String x:Key="BattleFormationOperUnavailable.Level">{key=Operator} level too low</system:String>
     <system:String x:Key="BattleFormationOperUnavailable.SkillLevel">Skill level too low</system:String>
     <system:String x:Key="BattleFormationOperUnavailable.Module">Required module not unlocked</system:String>
+    <system:String x:Key="CopilotUserAdditionalNameInvalid">Additional custom {key=Operator} name invalid: {0}, please check spelling</system:String>
     <system:String x:Key="CurrentSteps">Step: {0} {1}</system:String>
     <system:String x:Key="ElapsedTime">Elapsed time: {0}ms</system:String>
     <system:String x:Key="Deploy">Deploy</system:String>
@@ -1221,6 +1230,7 @@ Right-click to clear inactive jobs</system:String>
     <system:String x:Key="DrawCard">Deploy Operator</system:String>
     <system:String x:Key="CheckIfStartOver">Check If Restart</system:String>
     <system:String x:Key="UnsupportedLevel">Unsupported stage, please check the stage name or go to ｢{key=Settings} - {key=UpdateSettings} - {key=ResourceUpdate}｣ and try updating the resource version!</system:String>
+    <system:String x:Key="UnsupportedSkill">{0} does not support Skill {1}, so the Skill will no longer be selected.</system:String>
     <system:String x:Key="RecruitTagsDetected" xml:space="preserve">Identification results:&#160;</system:String>
     <system:String x:Key="ConnectFailed">Connection Failed</system:String>
     <system:String x:Key="TryToReconnectByAdb">Attempting to reconnect</system:String>
@@ -1262,9 +1272,9 @@ Before use, please ensure:
     <!--  About  -->
     <system:String x:Key="Website">MAA Website</system:String>
     <system:String x:Key="Github">Source code: GitHub</system:String>
-    <system:String x:Key="PrtsPlus">Copilot Json sharing site</system:String>
+    <system:String x:Key="PrtsPlus">Copilot JSON sharing site</system:String>
     <system:String x:Key="MapPrts">Copilot Map and Coordinate</system:String>
-    <system:String x:Key="CustomInfrastGenerator">Custom Base Json Generator</system:String>
+    <system:String x:Key="CustomInfrastGenerator">Custom Base JSON Generator</system:String>
     <system:String x:Key="QqGroup">QQ group</system:String>
     <system:String x:Key="QqChannel">QQ channel</system:String>
     <system:String x:Key="Telegram">Telegram</system:String>
@@ -1279,6 +1289,14 @@ Before use, please ensure:
     <system:String x:Key="OpenDebugFolder">Open Debug Folder</system:String>
     <system:String x:Key="GenerateSupportPayloadSuccessful">Support payload generated successfully</system:String>
     <system:String x:Key="GenerateSupportPayloadException">An error occurred while generating the support payload:</system:String>
+    <system:String x:Key="ClearImageCache">Clear Image Cache</system:String>
+    <system:String x:Key="ClearImageCacheTip" xml:space="preserve">Manual cleanup is usually unnecessary.
+Images in the DEBUG directory have a quantity limit, and old images are automatically cleaned when exceeded.
+Manual cleanup deletes all images, which may result in missing screenshots for troubleshooting.
+Cache files (such as maps, operator avatars, etc.) need to be regenerated after clearing, which may affect user experience.</system:String>
+    <system:String x:Key="ClearImageCacheSuccessful">Image cache cleared successfully</system:String>
+    <system:String x:Key="ClearImageCacheAlreadyEmpty">Image cache is already empty</system:String>
+    <system:String x:Key="ClearImageCacheException">An error occurred while clearing the image cache:</system:String>
     <!--  !Issues  -->
     <!--  AutoRecruitSettings  -->
     <system:String x:Key="AutoRefresh">Auto refresh 3★ Tags</system:String>
@@ -1789,5 +1807,17 @@ If you want to run multiple MAA at the same time, please copy the whole MAA and 
     <system:String x:Key="BadModules.Warning.Prolog">The following DLL(s) injected into MAA may crash MAA or corrupt MAA user interface:</system:String>
     <system:String x:Key="BadModules.Warning.Epilog">If you encounter such issues with MAA, please try adding MAA to the exclusion list of the relevant software, or uninstall the related software and check if the problem persists.</system:String>
     <system:String x:Key="BadModules.Warning.DoNotShowAgain">Do not show this warning again</system:String>
+    <system:String x:Key="BadModules.Confirmation.Heading">Warning: Performance Impact</system:String>
+    <system:String x:Key="BadModules.Confirmation.Text" xml:space="preserve">If you choose to suppress this warning, MAA will use software rendering instead of hardware rendering. This will cause:&#x0a;&#x0a;• Performance degradation&#x0a;• UI lag&#x0a;• Increased CPU usage&#x0a;&#x0a;&#x0a;Do you confirm to suppress the warning and accept these consequences?</system:String>
+    <system:String x:Key="BadModules.UseSoftwareRendering">Use Software Rendering</system:String>
+    <system:String x:Key="BadModules.UseSoftwareRenderingTip">When enabled, bad module warnings will be suppressed and software rendering mode will be used. This causes performance degradation, UI lag, and increased CPU usage. Uncheck to restore hardware rendering.</system:String>
+    <system:String x:Key="BadModules.ResetWarning">Software rendering mode is now enabled. Restart MAA to apply this setting.</system:String>
+    <system:String x:Key="BadModules.ResetSuccess">Hardware rendering mode has been restored. Restart MAA to apply changes. Restart now?</system:String>
     <!--  !BadModules  -->
+
+    <!--  EmulatorPathSelection  -->
+    <system:String x:Key="SelectEmulatorPath">Select Emulator Path</system:String>
+    <system:String x:Key="MultipleEmulatorsDetected">Multiple emulator installation paths detected, please select the path you want to use:</system:String>
+    <system:String x:Key="PleaseSelectPath">Please select a path</system:String>
+    <!--  !EmulatorPathSelection  -->
 </ResourceDictionary>
