@@ -1,27 +1,43 @@
-## v6.4.1-beta.1
+## v6.5.2
 
 ### 新增 | New
 
-* macOS ScreenCaptureKit (#15939) @hguandl
+* 自动战斗最小截图间隔默认改为 16ms @ABA2396
 
 ### 改进 | Improved
 
-* 新Config属性变动log 优化 @status102
-* 当热更资源命中时, 不再二次加载资源 (#15907) @status102
-* RM SettlementStageName roi @Daydreamer114
+* 优化关卡匹配判断 @ABA2396
 
 ### 修复 | Fix
 
-* jp tag ocr @Saratoga-Official
-* KR RM WaitForEnd @Daydreamer114
-* EN RM SettlementStageName (#15946) @Daydreamer114
+* 自动战斗及肉鸽无法识别关卡名 @ABA2396
 
-### 文档 | Docs
+## v6.5.1
 
-* MuMu Screenshot i18n @ABA2396
-* 在 MuMu 截图增强模式中加入国际版 (#15934) @JasonHuang79
+### 新增 | New
+
+* 设置指引中的每次重新检测添加高亮提示 @ABA2396
+* 添加重看设置指引按钮 @ABA2396
+* 中断返回添加重试 @ABA2396
+
+### 改进 | Improved
+
+* 提取高亮提示勾选框为通用组件 @ABA2396
+
+### 修复 | Fix
+
+* 地图解析时 code 为 null 会崩溃 @status102
+* 地图判断不再允许 空值与非空值 => true @status102
+* 仅在刷源石锭模式下允许触发储备源石锭达到上限时停止 @ABA2396
 
 ### 其他 | Other
 
-* 调整主线/资源收集模板阈值 @ABA2396
-* 调整干员识别部分角色字体颜色及排序 @ABA2396
+* Add inline styles to Trendshift badge @AnnAngela
+* Update README.md badge formatting and structure @AnnAngela
+
+## v6.5.0
+
+### 新增 | New
+
+* 卫二期 @ABA2396
+* 调整提示文本 @ABA2396

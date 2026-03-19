@@ -113,6 +113,8 @@
     <system:String x:Key="GuideOpenSourceTitle">💡 Participate in Open Source</system:String>
     <system:String x:Key="GuideOpenSourceDescription">As an open source project, users can participate in MAA's development on GitHub platform under the AGPL-3.0 license. MAA Team encourages users to contribute valuable code instead of just reporting issues.</system:String>
     <system:String x:Key="GuideUserAgreement">By using MAA, you agree to comply with the "User Agreement". The complete agreement can be found in the link at the bottom of the official website.</system:String>
+    <system:String x:Key="RestartGuide">Restart Settings Guide</system:String>
+    <system:String x:Key="RestartGuidePrompt">The settings guide will be displayed on the main interface. Restart the application now?</system:String>
     <!--  !Settings Guide  -->
     <system:String x:Key="Dorm">Dormitory</system:String>
     <system:String x:Key="Mfg">Factory</system:String>
@@ -583,7 +585,7 @@ Then delete the entries corresponding to the paths.
     <system:String x:Key="LogItemDateFormatString">Date format string</system:String>
     <system:String x:Key="PromptRestartForSettingsChange">Restart immediately to apply changes?</system:String>
     <system:String x:Key="SwitchResolutionTip">Change the emulator resolution to 1920x1080!</system:String>
-    <system:String x:Key="ResolutionInfoYoStarEN">Make sure the emulator is set to 1920x1080</system:String>
+    <system:String x:Key="ResolutionInfoYoStarEN">For YoStarEN, make sure the emulator is set to 1920x1080</system:String>
     <system:String x:Key="AllowUseStoneSave">Save ｢Use Originium｣</system:String>
     <system:String x:Key="AllowUseStoneSaveWarning">This function is considered dangerous. Pressing the ｢{key=Confirm}｣ button indicates that you understand and are willing to accept the potential risks.</system:String>
     <system:String x:Key="UseAlternateStage">Use alternative stage</system:String>
@@ -906,6 +908,9 @@ The video aspect ratio needs to be 16:9 without interference factors such as bla
     <system:String x:Key="MiniGame@PVTip">Automatically clear from the selected stage. If you choose the first stage, start from the leftmost side of the event page; for other stages, enter the previous stage and then return to calibrate the position.</system:String>
     <system:String x:Key="MiniGame@SPA">Stronghold Protocol: Alliance</system:String>
     <system:String x:Key="MiniGame@SPATip" xml:space="preserve">Start the task from the main event screen (where ｢Independent Simulation｣ is located)
+If there is a saved game, you need to manually abandon it first
+Only tested up to ｢Perilous Simulation｣
+If higher difficulties have been cleared and ｢Perilous Simulation｣ or ｢Standard Simulation｣ is not visible, manually select ｢Perilous Simulation｣ difficulty once
 Completing ｢Standard Simulation｣ manually allows faster score farming
 Only level rewards can be farmed; to get the Engraved Medal, all ｢Key Objectives｣ must be completed</system:String>
     <system:String x:Key="MiniGame@OS">OS-Karlan Trade Technology R&amp;D Department</system:String>
@@ -1080,7 +1085,7 @@ Right-click to clear inactive jobs</system:String>
     <system:String x:Key="CopyErrorMessage">Copy error message</system:String>
     <!--  !ErrorView  -->
     <!--  AsstProxy  -->
-    <system:String x:Key="ResourceBroken">The resource is damaged, please download the full package again.\n\n{key=FullPackageUpgradeTips}</system:String>
+    <system:String x:Key="ResourceBroken">The resources are damaged, please download the full package again.\n\n{key=FullPackageUpgradeTips}</system:String>
     <system:String x:Key="ReplaceAdbNotExists">ADB File NOT existing</system:String>
     <system:String x:Key="AdbDownloadFailedTitle">ADB Download Failed</system:String>
     <system:String x:Key="AdbDeletionFailedMessage">Unable to delete directory, it may have been replaced or encountered other issues. Please check the logs for more information.</system:String>
@@ -1364,6 +1369,8 @@ Cache files (such as maps, operator avatars, etc.) need to be regenerated after 
     <!--  !RootViewModel  -->
     <!--  Api  -->
     <system:String x:Key="ApiUpdateSuccess">Hot update data retrieval successful</system:String>
+    <system:String x:Key="ApiUpdateFailed">Hot update data retrieval failed</system:String>
+    <system:String x:Key="ApiCacheLoaded">Using local cached data</system:String>
     <system:String x:Key="GameResourceUpdating">Game resources are being updated.</system:String>
     <system:String x:Key="GameResourceUpdatingMirrorChyan">Updating resource {0} from ｢{key=MirrorChyan}｣...</system:String>
     <system:String x:Key="GameResourceUpdatePreparing">Indexing in progress</system:String>
@@ -1402,7 +1409,6 @@ Cache files (such as maps, operator avatars, etc.) need to be regenerated after 
     <system:String x:Key="Announcement">Announcement</system:String>
     <system:String x:Key="CheckAndDownloadAnnouncement">View Announcement</system:String>
     <system:String x:Key="DoNotRemindThisAnnouncementAgain">Do not show this announcement again</system:String>
-    <system:String x:Key="DoNotShowAnnouncement">Disable announcement popups</system:String>
     <system:String x:Key="AnnouncementNotFinishedConfirm">You haven't finished reading. Please confirm after you finish.</system:String>
     <system:String x:Key="AnnouncementNotFinishedConfirm2">Yes, you — still clicking</system:String>
     <system:String x:Key="AnnouncementNotFinishedConfirm3">Still clicking</system:String>

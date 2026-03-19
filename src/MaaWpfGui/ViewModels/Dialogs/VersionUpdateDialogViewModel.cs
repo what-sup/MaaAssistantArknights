@@ -618,12 +618,31 @@ public class VersionUpdateDialogViewModel : Screen
         }
 
         var arch = IsArm ? "arm64" : "x64";
+        string? rawUrl = _assetsObject["browser_download_url"]?.ToString();
+
+        if (SettingsViewModel.VersionUpdateSettings.UpdateSource == "Github" && !string.IsNullOrWhiteSpace(_latestVersion))
+        {
+            rawUrl = $"https://github.com/what-sup/MaaAssistantArknights/releases/download/{_latestVersion}/MAA-{_latestVersion}-win-{arch}.zip";
+        }
+
         var urls = new List<string>();
 
-        // 只使用自定义 fork 仓库的全量包下载地址
-        if (!string.IsNullOrWhiteSpace(_latestVersion))
+        if (SettingsViewModel.VersionUpdateSettings.UpdateSource == "Github" && !SettingsViewModel.VersionUpdateSettings.ForceGithubGlobalSource)
         {
-            urls.Add($"https://github.com/what-sup/MaaAssistantArknights/releases/download/{_latestVersion}/MAA-{_latestVersion}-win-{arch}.zip");
+            var mirrors = _assetsObject["mirrors"]?.ToObject<List<string>>();
+
+            if (mirrors != null)
+            {
+                urls.AddRange(mirrors);
+            }
+        }
+
+        // 负载均衡
+        // var rand = new Random();
+        // urls = urls.OrderBy(_ => rand.Next()).ToList();
+        if (rawUrl != null)
+        {
+            urls.Add(rawUrl);
         }
 
         _logger.Information("Start test legacy download urls");

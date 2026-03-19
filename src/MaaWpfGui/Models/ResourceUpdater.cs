@@ -373,7 +373,6 @@ public static class ResourceUpdater
                     return ret;
                 }
 
-                // 当更新源为 Github 时，即便 MirrorChyan 缺少 CDK 也应继续从 Github 获取资源
                 ret = CheckUpdateRetT.OK;
             }
 

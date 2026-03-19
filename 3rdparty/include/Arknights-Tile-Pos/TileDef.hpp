@@ -20,10 +20,23 @@ struct LevelKey
         return (lhs.empty() || rhs.empty()) ? true : lhs == rhs;
     }
 
+    bool check_and_track(const std::string& lhs, const std::string& rhs, bool& matched) const noexcept
+    {
+        if (!lhs.empty() && !rhs.empty()) {
+            if (lhs != rhs) return false;
+            matched = true;
+        }
+        return true;
+    }
+
     bool operator==(const LevelKey& other) const noexcept
     {
-        return empty_or_equal(stageId, other.stageId) && empty_or_equal(code, other.code)
-               && empty_or_equal(levelId, other.levelId) && empty_or_equal(name, other.name);
+        bool has_non_empty_match = false;
+        return check_and_track(stageId, other.stageId, has_non_empty_match)
+            && check_and_track(code, other.code, has_non_empty_match)
+            && check_and_track(levelId, other.levelId, has_non_empty_match)
+            && check_and_track(name, other.name, has_non_empty_match)
+            && has_non_empty_match;
     }
 
     bool operator==(const std::string& any_key) const noexcept
@@ -67,7 +80,7 @@ private:
 inline Level::Level(const json::value& data)
 {
     key.stageId = data.at("stageId").as_string();
-    key.code = data.at("code").as_string();
+    key.code = data.get("code", "null");
     key.levelId = data.at("levelId").as_string();
     key.name = data.get("name", "null");
     this->height = data.at("height").as_integer();
