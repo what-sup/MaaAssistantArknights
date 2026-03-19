@@ -10,7 +10,7 @@ on:
       upstream_branch:
         description: "Branch name to sync from upstream"
         required: false
-        default: master
+        default: master-v2
   schedule:
     - cron: "0 */3 * * *"
 
@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   merge-upstream:
-    name: Merge upstream master
+    name: Merge upstream master-v2
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.change_status.outputs.changed }}
@@ -31,7 +31,7 @@ jobs:
     env:
       BASE_BRANCH: master
       UPSTREAM_REPO: MaaAssistantArknights/MaaAssistantArknights
-      UPSTREAM_BRANCH: master
+      UPSTREAM_BRANCH: master-v2
       WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
 
     steps:
@@ -53,7 +53,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "UPSTREAM_REPO=${{ github.event.inputs.upstream_repo || 'MaaAssistantArknights/MaaAssistantArknights' }}" >> "$GITHUB_ENV"
-          echo "UPSTREAM_BRANCH=${{ github.event.inputs.upstream_branch || 'master' }}" >> "$GITHUB_ENV"
+          echo "UPSTREAM_BRANCH=${{ github.event.inputs.upstream_branch || 'master-v2' }}" >> "$GITHUB_ENV"
 
       - name: Configure Git user
         run: |
