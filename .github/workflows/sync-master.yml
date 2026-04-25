@@ -84,10 +84,24 @@ jobs:
       - name: Merge upstream changes
         run: |
           set -euo pipefail
-          git merge --no-edit "upstream/${UPSTREAM_BRANCH}" || {
-            echo "::error::Merge resulted in conflicts. Resolve manually and re-run the workflow."
+          if git merge --no-edit "upstream/${UPSTREAM_BRANCH}"; then
+            echo "Merge completed without conflicts."
+          else
+            echo "::warning::Merge had conflicts. Retrying with upstream-preferred strategy (-X theirs)."
+            git merge --abort
+            if ! git merge --no-edit -X theirs "upstream/${UPSTREAM_BRANCH}"; then
+              echo "::error::Merge still has conflicts after retry. Resolve manually and re-run the workflow."
+              git diff --name-only --diff-filter=U || true
+              exit 1
+            fi
+          fi
+
+          unmerged_files="$(git diff --name-only --diff-filter=U || true)"
+          if [ -n "$unmerged_files" ]; then
+            echo "::error::Unmerged files remain after merge:"
+            echo "$unmerged_files"
             exit 1
-          }
+          fi
           git status -sb
 
       - name: Record updated commit
