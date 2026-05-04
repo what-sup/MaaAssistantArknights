@@ -179,6 +179,7 @@ public class VersionUpdateDialogViewModel : Screen
     private string? _mirrorcDownloadUrl;
     private string? _mirrorcVersionName;
     private string? _mirrorcReleaseNote;
+    private bool _requiresFullPackageConfirmation;
 
     public static bool HasPendingUpdatePackage()
     {
@@ -417,7 +418,14 @@ public class VersionUpdateDialogViewModel : Screen
             return CheckUpdateRetT.FailedToGetInfo;
         }
 
-        var arch = IsArm ? "arm64" : "x64";
+        string plannedPackagePath = GetPlannedUpdatePackagePath(UpdatePackageName);
+        if (_requiresFullPackageConfirmation && !ConfirmFullPackageUpdate(plannedPackagePath))
+        {
+            _logger.Information("Full package download canceled by user before download: {PackagePath}", plannedPackagePath);
+            OutputDownloadProgress(string.Empty, downloading: false);
+            return CheckUpdateRetT.NoNeedToUpdate;
+        }
+
         string? rawUrl = _assetsObject["browser_download_url"]?.ToString();
 
         if (SettingsViewModel.VersionUpdateSettings.UpdateSource == "Github" && !string.IsNullOrWhiteSpace(_latestVersion))
@@ -599,6 +607,14 @@ public class VersionUpdateDialogViewModel : Screen
         }
 
         UpdatePackageName = "MirrorChyanApp" + _mirrorcVersionName + ".zip";
+        string plannedPackagePath = GetPlannedUpdatePackagePath(UpdatePackageName);
+        if (_requiresFullPackageConfirmation && !ConfirmFullPackageUpdate(plannedPackagePath))
+        {
+            _logger.Information("MirrorChyan full package download canceled by user before download: {PackagePath}", plannedPackagePath);
+            OutputDownloadProgress(string.Empty, downloading: false);
+            return CheckUpdateRetT.NoNeedToUpdate;
+        }
+
         var downloaded = await DownloadFromMirrorChyan(_mirrorcDownloadUrl,
                     UpdatePackageName);
 
@@ -634,6 +650,24 @@ public class VersionUpdateDialogViewModel : Screen
         await AskToRestartCore(
             LocalizationHelper.GetString("LocalUpdatePackageImportedDesc"),
             LocalizationHelper.GetString("LocalUpdatePackageImportedTitle"));
+    }
+
+    public static bool ConfirmFullPackageUpdate(string packagePath)
+    {
+        string baseDir = Path.GetFullPath(PathsHelper.BaseDir);
+        string normalizedPackagePath = Path.IsPathRooted(packagePath)
+            ? Path.GetFullPath(packagePath)
+            : GetPlannedUpdatePackagePath(packagePath);
+
+        MessageBoxResult result = MessageBoxHelper.Show(
+            string.Format(LocalizationHelper.GetString("PendingFullUpdateManualConfirmDesc"), baseDir, normalizedPackagePath),
+            LocalizationHelper.GetString("PendingFullUpdateManualConfirmTitle"),
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            yes: LocalizationHelper.GetString("PendingFullUpdateManualConfirmYes"),
+            no: LocalizationHelper.GetString("PendingFullUpdateManualConfirmNo"));
+
+        return result == MessageBoxResult.Yes;
     }
 
     private async Task AskToRestartCore(string description, string title)
@@ -729,6 +763,8 @@ public class VersionUpdateDialogViewModel : Screen
 
     private async Task<CheckUpdateRetT> GetVersionDetailsByMaaApi(string versionType)
     {
+        _requiresFullPackageConfirmation = false;
+
         var (_, json) = await Instances.MaaApiService.RequestMaaApiWithCache($"version/{versionType}.json", false);
         if (json is null)
         {
@@ -793,6 +829,7 @@ public class VersionUpdateDialogViewModel : Screen
         if (_assetsObject == null && fullPackage != null && SettingsViewModel.VersionUpdateSettings.AutoDownloadUpdatePackage)
         {
             _assetsObject = fullPackage;
+            _requiresFullPackageConfirmation = true;
             _logger.Warning("No OTA package found, but full package found.");
             using var toast = new ToastNotification(LocalizationHelper.GetString("NewVersionNoOtaPackage"));
             toast.Show(30);
@@ -804,6 +841,8 @@ public class VersionUpdateDialogViewModel : Screen
 
     private async Task<CheckUpdateRetT> CheckUpdateByMirrorChyan()
     {
+        _requiresFullPackageConfirmation = false;
+
         var cdk = SettingsViewModel.VersionUpdateSettings.MirrorChyanCdk.Trim();
         var arch = IsArm ? "arm64" : "x64";
         string channel = SettingsViewModel.VersionUpdateSettings.VersionType switch {
@@ -928,12 +967,17 @@ public class VersionUpdateDialogViewModel : Screen
             return CheckUpdateRetT.AlreadyLatest;
         }
 
-        if (data["data"]?["update_type"]?.ToObject<string>() == "full" && SettingsViewModel.VersionUpdateSettings.AutoDownloadUpdatePackage)
+        if (data["data"]?["update_type"]?.ToObject<string>() == "full")
         {
-            using var toast = new ToastNotification(LocalizationHelper.GetString("NewVersionNoOtaPackage"));
-            toast.Show(30);
-            _logger.Warning("No OTA package found, but full package found.");
-            Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetString("NewVersionNoOtaPackage"), UiLogColor.Warning);
+            _requiresFullPackageConfirmation = true;
+
+            if (SettingsViewModel.VersionUpdateSettings.AutoDownloadUpdatePackage)
+            {
+                using var toast = new ToastNotification(LocalizationHelper.GetString("NewVersionNoOtaPackage"));
+                toast.Show(30);
+                _logger.Warning("No OTA package found, but full package found.");
+                Instances.TaskQueueViewModel.AddLog(LocalizationHelper.GetString("NewVersionNoOtaPackage"), UiLogColor.Warning);
+            }
         }
 
         // 到这里已经确定有新版本了
@@ -967,6 +1011,11 @@ public class VersionUpdateDialogViewModel : Screen
         }
 
         return string.CompareOrdinal(_curVersion, latestVersion) < 0;
+    }
+
+    private static string GetPlannedUpdatePackagePath(string packageName)
+    {
+        return Path.GetFullPath(Path.Combine(PathsHelper.BaseDir, packageName));
     }
 
     /// <summary>
