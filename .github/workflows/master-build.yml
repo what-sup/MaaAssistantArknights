@@ -231,9 +231,16 @@ jobs:
           $csproj.Save($csprojPath)
 
       - name: Publish WPF GUI
-        continue-on-error: true
         run: |
           dotnet publish src/MaaWpfGui/MaaWpfGui.csproj -c Release -p:Platform=${{ matrix.arch == 'arm64' && 'ARM64' || 'x64' }} -o install
+
+      - name: Verify GUI output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "install/MAA.exe")) {
+            Write-Error "MAA.exe not found in install directory. WPF publish likely failed."
+            exit 1
+          }
 
       - name: Organize install files
         shell: pwsh
