@@ -194,10 +194,39 @@ jobs:
         run: |
           cmake --build build --config RelWithDebInfo --parallel $env:NUMBER_OF_PROCESSORS
 
+      - name: Build updater
+        run: |
+          cmake --build build --target MAA.Updater --config RelWithDebInfo --parallel $env:NUMBER_OF_PROCESSORS
+
       - name: Install
         run: |
           mkdir -p install
           cmake --install build --prefix install --config RelWithDebInfo
+
+      - name: Download MaaFramework
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: MaaXYZ/MaaFramework
+          tag: v5.9.2
+          fileName: "*win-x86_64*.zip"
+          extract: true
+          out-file-path: MaaFramework-temp
+
+      - name: Copy ControlUnits
+        shell: pwsh
+        run: |
+          Copy-Item MaaFramework-temp/bin/*Win32ControlUnit* install/ -ErrorAction SilentlyContinue
+          Copy-Item MaaFramework-temp/bin/*AdbControlUnit* install/ -ErrorAction SilentlyContinue
+
+      - name: Generate global.json
+        shell: pwsh
+        run: |
+          '{"sdk":{"version":"10.0.203","rollForward":"disable"}}' | Out-File -FilePath global.json -Encoding ascii
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
 
       - name: Cache NuGet
         id: cache-nuget
@@ -206,7 +235,7 @@ jobs:
           path: |
             .nuke/temp
             ~/.nuget/packages
-          key: master-windows-${{ matrix.arch }}-nuget-${{ hashFiles('**/*.csproj') }}
+          key: master-windows-${{ matrix.arch }}-nuget-${{ hashFiles('**/*.csproj', 'global.json') }}
 
       - name: Restore dependencies
         if: steps.cache-nuget.outputs.cache-hit != 'true'
@@ -248,6 +277,7 @@ jobs:
           Remove-Item install/*.pdb -Force -ErrorAction SilentlyContinue
           Remove-Item install/msvc-debug -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item install/*.h -Force -ErrorAction SilentlyContinue
+          Remove-Item install/*.bak -Force -ErrorAction SilentlyContinue
           Copy-Item "tools/DependencySetup_依赖库安装.bat" install
 
       - name: Zip files
