@@ -195,8 +195,13 @@ jobs:
           cmake --build build --config RelWithDebInfo --parallel $env:NUMBER_OF_PROCESSORS
 
       - name: Build updater
+        shell: pwsh
         run: |
-          cmake --build build --target MAA.Updater --config RelWithDebInfo --parallel $env:NUMBER_OF_PROCESSORS
+          if (Test-Path "build/MAA.Updater.vcxproj") {
+            cmake --build build --target MAA.Updater --config RelWithDebInfo --parallel $env:NUMBER_OF_PROCESSORS
+          } else {
+            Write-Host "MAA.Updater.vcxproj not found; skipping updater build."
+          }
 
       - name: Install
         run: |
@@ -227,6 +232,24 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
+
+      - name: Patch arch in update dialog (if needed)
+        shell: pwsh
+        run: |
+          $path = "src/MaaWpfGui/ViewModels/Dialogs/VersionUpdateDialogViewModel.cs"
+          if (-not (Test-Path $path)) {
+            Write-Host "No update dialog file to patch."
+            exit 0
+          }
+
+          $content = Get-Content -Raw $path
+          if ($content -match "-win-\{arch\}\.zip") {
+            $content = $content -replace "-win-\{arch\}\.zip", "-win-{(IsArm ? \"arm64\" : \"x64\")}\.zip"
+            Set-Content -Path $path -Value $content -Encoding utf8
+            Write-Host "Patched arch placeholder in update dialog."
+          } else {
+            Write-Host "No arch placeholder patch required."
+          }
 
       - name: Cache NuGet
         id: cache-nuget
