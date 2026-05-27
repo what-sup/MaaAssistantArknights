@@ -243,8 +243,8 @@ jobs:
           }
 
           $content = Get-Content -Raw $path
-          if ($content -match "-win-\{arch\}\.zip") {
-            $content = $content -replace "-win-\{arch\}\.zip", "-win-{(IsArm ? \"arm64\" : \"x64\")}\.zip"
+          if ($content.Contains('-win-{arch}.zip')) {
+            $content = $content.Replace('-win-{arch}.zip', '-win-{(IsArm ? "arm64" : "x64")}.zip')
             Set-Content -Path $path -Value $content -Encoding utf8
             Write-Host "Patched arch placeholder in update dialog."
           } else {
