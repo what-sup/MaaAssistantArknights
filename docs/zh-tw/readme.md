@@ -107,13 +107,13 @@ MAA 以中文（簡體）為第一語言，翻譯詞條均以中文（簡體）�
 
 ### API
 
-- [C 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/include/AsstCaller.h)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Cpp/main.cpp)
-- [Python 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Python/asst/asst.py)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Python/sample.py)
-- [Golang 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/tree/dev/src/Golang)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Golang/maa/maa.go)
-- [Dart 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/tree/dev/src/Dart)
-- [Java 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Java/src/main/java/com/iguigui/maaj/easySample/MaaCore.java)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Java/src/main/java/com/iguigui/maaj/easySample/MaaJavaSample.java)
-- [Java HTTP 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Java/Readme.md)
-- [Rust 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/tree/dev/src/Rust/src/maa_sys)：[HTTP 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/tree/dev/src/Rust)
+- [C 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/include/AsstCaller.h)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/src/Cpp/main.cpp)
+- [Python 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/src/Python/asst/asst.py)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/src/Python/sample.py)
+- [Golang 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/tree/dev-v2/src/Golang)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/src/Golang/maa/maa.go)
+- [Dart 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/tree/dev-v2/src/Dart)
+- [Java 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/src/Java/src/main/java/com/iguigui/maaj/easySample/MaaCore.java)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/src/Java/src/main/java/com/iguigui/maaj/easySample/MaaJavaSample.java)
+- [Java HTTP 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev-v2/src/Java/Readme.md)
+- [Rust 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/tree/dev-v2/src/Rust/src/maa_sys)：[HTTP 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/tree/dev-v2/src/Rust)
 - [TypeScript 介面](https://github.com/MaaX/tree/main/packages/main/coreLoader)
 - [Woolang 介面](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Woolang/maa.wo)：[整合範例](https://github.com/MaaAssistantArknights/MaaAssistantArknights/blob/dev/src/Woolang/demo.wo)
 - [整合文件](./protocol/integration.md)
