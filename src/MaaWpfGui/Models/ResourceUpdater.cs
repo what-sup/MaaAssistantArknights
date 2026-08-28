@@ -345,7 +345,8 @@ public static class ResourceUpdater
                 return ret;
             }
 
-            bool downloadSucceeded = SettingsViewModel.VersionUpdateSettings.UpdateSource switch
+            if (SettingsViewModel.VersionUpdateSettings.UpdateSource == UpdateSource.MirrorChyan &&
+                await DownloadFromMirrorChyanAsync(uri, releaseNote))
             {
                 "MirrorChyan" => await DownloadFromMirrorChyanAsync(uri, releaseNote),
                 "Github" => await UpdateFromGithubAsync(),
